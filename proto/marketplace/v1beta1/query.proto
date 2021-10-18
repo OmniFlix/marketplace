@@ -1,0 +1,49 @@
+syntax = "proto3";
+package OmniFlix.marketplace.v1beta1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "google/api/annotations.proto";
+import "marketplace/v1beta1/listing.proto";
+
+option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
+
+service Query {
+  rpc Listings(QueryListingsRequest) returns (QueryListingsResponse) {
+    option (google.api.http).get = "/daya/marketplace/v1beta1/listings";
+  }
+
+  rpc Listing(QueryListingRequest) returns (QueryListingResponse) {
+    option (google.api.http).get = "/daya/marketplace/v1beta1/listings/{id}";
+  }
+
+  rpc ListingsByOwner(QueryListingsByOwnerRequest) returns (QueryListingsByOwnerResponse) {
+    option (google.api.http).get = "/daya/marketplace/v1beta1/listings/{owner}";
+  }
+}
+
+message QueryListingsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryListingsResponse {
+  repeated Listing                       listings   = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryListingRequest {
+  string id = 1;
+}
+
+message QueryListingResponse {
+  Listing listing = 1;
+}
+
+message QueryListingsByOwnerRequest {
+  string                                owner      = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message QueryListingsByOwnerResponse {
+  repeated Listing                       listings   = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+package OmniFlix.marketplace.v1beta1;
+
+option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
+
+// EventListONFT is emitted on NFT Listing on market
+message EventListNFT {
+  string id    = 1;
+  string owner = 2
+  ;
+}
+
+// EventDeListONFT is emitted on NFT DeListing from market
+message EventDeListNFT {
+  string id    = 1;
+  string owner = 2;
+}
+
+// EventBuyONFT is emitted on NFT Buy
+message EventBuyNFT {
+  string id    = 1;
+  string owner = 2;
+  string buyer = 3;
+}
