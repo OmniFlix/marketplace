@@ -13,14 +13,15 @@ const (
 )
 
 var (
-	PrefixListingById     = []byte{0x01}
-	PrefixListingsByOwner = []byte{0x02}
+	PrefixListingId    = []byte{0x01}
+	PrefixListingOwner = []byte{0x02}
+	PrefixListingsCount = []byte{0x03}
 )
 
-func KeyListingsById(id uint64) []byte {
-	return append(PrefixListingById, sdk.Uint64ToBigEndian(id)...)
+func KeyListingIdPrefix(id string) []byte {
+	return append(PrefixListingId, []byte(id)...)
 }
 
-func KeyListingsByOwner(owner sdk.AccAddress, id uint64) []byte {
-	return append(append(PrefixListingsByOwner, owner.Bytes()...), sdk.Uint64ToBigEndian(id)...)
+func KeyListingOwnerPrefix(owner sdk.AccAddress, id string) []byte {
+	return append(append(PrefixListingOwner, owner.Bytes()...), []byte(id)...)
 }

@@ -5,20 +5,32 @@ option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
 
 // EventListONFT is emitted on NFT Listing on market
 message EventListNFT {
-  string id    = 1;
-  string owner = 2
-  ;
+  string id       = 1;
+  string nft_id   = 2;
+  string denom_id = 3;
+  string owner    = 4;
+}
+// EventEditListing is emitted on edit Listing on market
+message EventEditListing {
+  string id       = 1;
+  string nft_id   = 2;
+  string denom_id = 3;
+  string owner    = 4;
 }
 
 // EventDeListONFT is emitted on NFT DeListing from market
 message EventDeListNFT {
-  string id    = 1;
-  string owner = 2;
+  string id       = 1;
+  string nft_id   = 2;
+  string denom_id = 3;
+  string owner    = 4;
 }
 
 // EventBuyONFT is emitted on NFT Buy
 message EventBuyNFT {
-  string id    = 1;
-  string owner = 2;
-  string buyer = 3;
+  string id       = 1;
+  string nft_id   = 2;
+  string denom_id = 3;
+  string owner    = 4;
+  string buyer    = 5;
 }

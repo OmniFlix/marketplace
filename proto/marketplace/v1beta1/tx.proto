@@ -11,6 +11,8 @@ service Msg {
 
   rpc ListNFT(MsgListNFT) returns (MsgListNFTResponse);
 
+  rpc EditListing(MsgEditListing) returns (MsgEditListingResponse);
+
   rpc DeListNFT(MsgDeListNFT) returns (MsgDeListNFTResponse);
 
   rpc BuyNFT(MsgBuyNFT) returns (MsgBuyNFTResponse);
@@ -18,29 +20,41 @@ service Msg {
 }
 
 message MsgListNFT {
-  string                   id     = 1;
-  cosmos.base.v1beta1.Coin price  = 2 [
+  string                   id       = 1;
+  string                   nft_id   = 2;
+  string                   denom_id = 3;
+  cosmos.base.v1beta1.Coin price    = 4 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  string                   sender = 3;
+  string                   owner    = 5;
 }
 message MsgListNFTResponse {}
 
+message MsgEditListing {
+  string                   id    = 1;
+  cosmos.base.v1beta1.Coin price = 2 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string                   owner = 3;
+}
+message MsgEditListingResponse {}
+
 message MsgDeListNFT {
-  string id     = 1;
-  string sender = 2;
+  string id    = 1;
+  string owner = 2;
 }
 
 message MsgDeListNFTResponse {}
 
 message MsgBuyNFT {
-  string                   id     = 1;
-  cosmos.base.v1beta1.Coin price  = 2 [
+  string                   id    = 1;
+  cosmos.base.v1beta1.Coin price = 2 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  string                   sender = 3;
+  string                   buyer = 3;
 }
 
 message MsgBuyNFTResponse {}

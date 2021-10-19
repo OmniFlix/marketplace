@@ -39,15 +39,3 @@ func NewKeeper(
 func (k Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With("module", fmt.Sprintf("OmniFlix/%s", types.ModuleName))
 }
-
-func (k Keeper) ListNFT(ctx sdk.Context) {
-
-}
-
-func (k Keeper) DeListNFT(ctx sdk.Context) {
-
-}
-
-func (k Keeper) BuyNFT(ctx sdk.Context) {
-
-}

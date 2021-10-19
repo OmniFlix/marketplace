@@ -12,6 +12,7 @@ import (
 
 func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgListNFT{}, "OmniFlix/marketplace/MsgListNFT", nil)
+	cdc.RegisterConcrete(&MsgEditListing{}, "OmniFlix/marketplace/MsgEditListing", nil)
 	cdc.RegisterConcrete(&MsgDeListNFT{}, "OmniFlix/marketplace/MsgDeListNFT", nil)
 	cdc.RegisterConcrete(&MsgBuyNFT{}, "OmniFlix/marketplace/MsgBuyNFT", nil)
 
@@ -22,6 +23,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 func RegisterInterfaces(registry types.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgListNFT{},
+		&MsgEditListing{},
 		&MsgDeListNFT{},
 		&MsgBuyNFT{},
 	)
