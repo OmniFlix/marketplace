@@ -9,10 +9,10 @@ func NewGenesisState(listings []Listing, listingCount uint64) *GenesisState {
 	}
 }
 
-func ValidateGenesis(data GenesisState) error {
-	for _, l := range data.Listings {
+func (m *GenesisState) ValidateGenesis() error {
+	for _, l := range m.Listings {
 		if l.GetOwner().Empty() {
-			return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing onft owner")
+			return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing nft owner")
 		}
 
 		if err := ValidateId(l.GetId()); err != nil {

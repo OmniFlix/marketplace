@@ -64,7 +64,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
-	return nil
+	return genState.ValidateGenesis()
 }
 
 // RegisterRESTRoutes registers the capability module's REST service handlers.
