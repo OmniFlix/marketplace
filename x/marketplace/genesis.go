@@ -14,13 +14,13 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	for _, l := range genState.Listings {
 		k.SetListing(ctx, l)
 	}
-	k.SetListingCount(ctx, uint64(len(genState.Listings)))
+	k.SetListingCount(ctx, genState.ListingCount)
 }
 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	return types.NewGenesisState(k.GetAllListings(ctx))
+	return types.NewGenesisState(k.GetAllListings(ctx), k.GetListingCount(ctx))
 }
 
 func DefaultGenesisState() *types.GenesisState {
-	return types.NewGenesisState([]types.Listing{})
+	return types.NewGenesisState([]types.Listing{}, 0)
 }

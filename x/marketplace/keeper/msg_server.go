@@ -25,6 +25,7 @@ func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types
 	if err != nil {
 		return nil, err
 	}
+
 	nft, err := m.nftKeeper.GetONFT(ctx, msg.DenomId, msg.NftId)
 	if err != nil {
 		return nil, sdkerrors.Wrapf(types.ErrNftNotExists,
@@ -39,7 +40,7 @@ func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types
 	}
 
 	listing := types.NewListing(msg.Id, msg.NftId, msg.DenomId, msg.Price, sdk.AccAddress(msg.Owner))
-	_ = m.Keeper.AppendListing(ctx, listing)
+	_ = m.Keeper.AddListing(ctx, listing)
 
 	ctx.EventManager().EmitTypedEvent(
 		&types.EventListNFT{
@@ -102,9 +103,7 @@ func (m msgServer) DeListNFT(goCtx context.Context,
 	if owner.String() != listing.Owner {
 		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "unauthorized address %s", owner)
 	}
-	m.Keeper.RemoveListing(ctx, msg.Id)
-	count := m.Keeper.GetListingCount(ctx)
-	m.Keeper.SetListingCount(ctx, count-1)
+	m.Keeper.DeleteListing(ctx, listing)
 
 	ctx.EventManager().EmitTypedEvent(
 		&types.EventDeListNFT{
@@ -118,8 +117,7 @@ func (m msgServer) DeListNFT(goCtx context.Context,
 	return &types.MsgDeListNFTResponse{}, nil
 }
 
-func (m msgServer) BuyNFT(goCtx context.Context,
-	msg *types.MsgBuyNFT) (*types.MsgBuyNFTResponse, error) {
+func (m msgServer) BuyNFT(goCtx context.Context, msg *types.MsgBuyNFT) (*types.MsgBuyNFTResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	buyer, err := sdk.AccAddressFromBech32(msg.Buyer)
@@ -145,16 +143,7 @@ func (m msgServer) BuyNFT(goCtx context.Context,
 		return nil, sdkerrors.Wrapf(types.ErrInvalidPrice,
 			"price %s not matched with listing price", msg.Price.String())
 	}
-	owner, err := sdk.AccAddressFromBech32(listing.Owner)
-	if err != nil {
-		return nil, err
-	}
-
-	err = m.bankKeeper.SendCoins(ctx, buyer, owner, sdk.NewCoins(listing.Price))
-	if err != nil {
-		return nil, err
-	}
-	err = m.nftKeeper.TransferOwnership(ctx, listing.DenomId, listing.NftId, owner, buyer)
+	err = m.Keeper.Buy(ctx, listing, buyer)
 	if err != nil {
 		return nil, err
 	}

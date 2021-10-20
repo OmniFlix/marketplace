@@ -375,11 +375,11 @@ func RegisterQueryHandlerClient(ctx context.Context, mux *runtime.ServeMux, clie
 }
 
 var (
-	pattern_Query_Listings_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"daya", "marketplace", "v1beta1", "listings"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Listings_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"omniflix", "marketplace", "v1beta1", "listings"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_Listing_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"daya", "marketplace", "v1beta1", "listings", "id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_Listing_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"omniflix", "marketplace", "v1beta1", "listings", "id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_Query_ListingsByOwner_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"daya", "marketplace", "v1beta1", "listings", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_Query_ListingsByOwner_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"omniflix", "marketplace", "v1beta1", "listings", "owner"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

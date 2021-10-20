@@ -4,20 +4,21 @@ package OmniFlix.marketplace.v1beta1;
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "google/api/annotations.proto";
 import "marketplace/v1beta1/listing.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
 
 service Query {
   rpc Listings(QueryListingsRequest) returns (QueryListingsResponse) {
-    option (google.api.http).get = "/daya/marketplace/v1beta1/listings";
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/listings";
   }
 
   rpc Listing(QueryListingRequest) returns (QueryListingResponse) {
-    option (google.api.http).get = "/daya/marketplace/v1beta1/listings/{id}";
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/listings/{id}";
   }
 
   rpc ListingsByOwner(QueryListingsByOwnerRequest) returns (QueryListingsByOwnerResponse) {
-    option (google.api.http).get = "/daya/marketplace/v1beta1/listings/{owner}";
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/listings/{owner}";
   }
 }
 
@@ -26,7 +27,7 @@ message QueryListingsRequest {
 }
 
 message QueryListingsResponse {
-  repeated Listing                       listings   = 1;
+  repeated Listing                       listings   = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
@@ -44,6 +45,6 @@ message QueryListingsByOwnerRequest {
 }
 
 message QueryListingsByOwnerResponse {
-  repeated Listing                       listings   = 1;
+  repeated Listing                       listings   = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
