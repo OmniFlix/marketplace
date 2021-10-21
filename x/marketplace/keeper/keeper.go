@@ -14,15 +14,17 @@ import (
 
 type Keeper struct {
 	storeKey      sdk.StoreKey
-	cdc           codec.Codec
+	cdc           codec.BinaryCodec
+	
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 	nftKeeper     types.NftKeeper
 }
 
 func NewKeeper(
-	cdc codec.Codec,
+	cdc codec.BinaryCodec,
 	key sdk.StoreKey,
+
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,

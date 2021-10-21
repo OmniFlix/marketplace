@@ -8,7 +8,7 @@ import (
 
 // state.
 func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) {
-	if err := types.ValidateGenesis(genState); err != nil {
+	if err := genState.ValidateGenesis(); err != nil {
 		panic(err.Error())
 	}
 	for _, l := range genState.Listings {

@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	allowedDenoms = []string{"uflix"}
+	allowedDenoms = []string{}
 )
 // ValidateListing checks listing is valid or not
 func ValidateListing(listing Listing) error {
@@ -30,9 +30,11 @@ func ValidatePrice(price sdk.Coin) error {
 	if price.IsZero() {
 		return sdkerrors.Wrapf(ErrInvalidPrice, "invalid price %d, only accepts positive amount", price)
 	}
+        /*
 	if !StringInSlice(price.Denom, allowedDenoms) {
 		return sdkerrors.Wrapf(ErrInvalidPriceDenom, "invalid denom %s", price.Denom)
 	}
+        */
 	return nil
 }
 

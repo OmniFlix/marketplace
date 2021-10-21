@@ -39,7 +39,7 @@ func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types
 			types.ErrNftNonTransferable, "non-transferable nfts not allowed to list in marketplace")
 	}
 
-	listing := types.NewListing(msg.Id, msg.NftId, msg.DenomId, msg.Price, sdk.AccAddress(msg.Owner))
+	listing := types.NewListing(msg.Id, msg.NftId, msg.DenomId, msg.Price, owner)
 	_ = m.Keeper.AddListing(ctx, listing)
 
 	ctx.EventManager().EmitTypedEvent(
