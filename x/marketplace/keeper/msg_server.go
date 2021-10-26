@@ -103,6 +103,11 @@ func (m msgServer) DeListNFT(goCtx context.Context,
 	if owner.String() != listing.Owner {
 		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "unauthorized address %s", owner)
 	}
+	err = m.nftKeeper.TransferOwnership(ctx, listing.GetDenomId(), listing.GetNftId(),
+		m.accountKeeper.GetModuleAddress(types.ModuleName), listing.GetOwner())
+	if err != nil {
+		return nil, err
+	}
 	m.Keeper.DeleteListing(ctx, listing)
 
 	ctx.EventManager().EmitTypedEvent(

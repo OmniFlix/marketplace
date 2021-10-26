@@ -10,15 +10,15 @@ import (
 type AccountKeeper interface {
 	// Methods imported from account should be defined here
 	GetAccount(ctx sdk.Context, addr sdk.AccAddress) authtypes.AccountI
+	GetModuleAddress(module string) sdk.AccAddress
 }
 
 type BankKeeper interface {
 	// Methods imported from bank should be defined here
-	GetAllBalances(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
-	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
-	LockedCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	SpendableCoins(ctx sdk.Context, addr sdk.AccAddress) sdk.Coins
 	SendCoins(ctx sdk.Context, from sdk.AccAddress, to sdk.AccAddress, amount sdk.Coins) error
+	SendCoinsFromModuleToAccount(ctx sdk.Context, formModule string, toAddr sdk.AccAddress, amt sdk.Coins) error
+	SendCoinsFromAccountToModule(ctx sdk.Context, fromAddr sdk.AccAddress, toModule string, amt sdk.Coins) error
 }
 
 type NftKeeper interface {

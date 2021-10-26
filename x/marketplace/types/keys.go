@@ -13,8 +13,8 @@ const (
 )
 
 var (
-	PrefixListingId    = []byte{0x01}
-	PrefixListingOwner = []byte{0x02}
+	PrefixListingId     = []byte{0x01}
+	PrefixListingOwner  = []byte{0x02}
 	PrefixListingsCount = []byte{0x03}
 )
 

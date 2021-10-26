@@ -13,9 +13,9 @@ import (
 )
 
 type Keeper struct {
-	storeKey      sdk.StoreKey
-	cdc           codec.BinaryCodec
-	
+	storeKey sdk.StoreKey
+	cdc      codec.BinaryCodec
+
 	accountKeeper types.AccountKeeper
 	bankKeeper    types.BankKeeper
 	nftKeeper     types.NftKeeper
@@ -60,6 +60,13 @@ func (k Keeper) AddListing(ctx sdk.Context, listing types.Listing) error {
 	count := k.GetListingCount(ctx)
 	k.SetListingCount(ctx, count+1)
 
+	err := k.nftKeeper.TransferOwnership(ctx,
+		listing.GetDenomId(), listing.GetNftId(), listing.GetOwner(),
+		k.accountKeeper.GetModuleAddress(types.ModuleName))
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -74,15 +81,20 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 		return err
 	}
 
-	err = k.bankKeeper.SendCoins(ctx, buyer, owner, sdk.NewCoins(listing.Price))
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, buyer, types.ModuleName, sdk.NewCoins(listing.Price))
 	if err != nil {
 		return err
 	}
-	err = k.nftKeeper.TransferOwnership(ctx, listing.DenomId, listing.NftId, owner, buyer)
+	err = k.nftKeeper.TransferOwnership(ctx, listing.GetDenomId(), listing.GetNftId(),
+		k.accountKeeper.GetModuleAddress(types.ModuleName), buyer)
+	if err != nil {
+		_ = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, buyer, sdk.NewCoins(listing.Price))
+		return err
+	}
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(listing.Price))
 	if err != nil {
 		return err
 	}
 	k.DeleteListing(ctx, listing)
-
 	return nil
 }
