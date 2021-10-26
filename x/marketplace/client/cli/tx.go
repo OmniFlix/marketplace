@@ -178,7 +178,7 @@ func GetCmdDeListNft() *cobra.Command {
 // GetCmdBuyNft implements the buy-nft command
 func GetCmdBuyNft() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "buy",
+		Use:   "buy-nft",
 		Short: "Buy an nft from marketplace",
 		Example: fmt.Sprintf(
 			"$ %s tx marketplace buy-nft [listing-id]"+
