@@ -182,6 +182,7 @@ func GetCmdBuyNft() *cobra.Command {
 		Short: "Buy an nft from marketplace",
 		Example: fmt.Sprintf(
 			"$ %s tx marketplace buy-nft [listing-id]"+
+				"--price=<price>"+
 				"--from=<key-name> "+
 				"--chain-id=<chain-id> "+
 				"--fees=<fee>",

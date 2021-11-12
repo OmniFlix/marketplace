@@ -108,7 +108,7 @@ func GetCmdQueryAllListings() *cobra.Command {
 // GetCmdQueryListingsByOwner implements the query listings by owner command.
 func GetCmdQueryListingsByOwner() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "listings [owner]",
+		Use:     "listings-by-owner [owner]",
 		Long:    "Query listings by the owner.",
 		Example: fmt.Sprintf("$ %s query marketplace listings <owner>", version.AppName),
 		RunE: func(cmd *cobra.Command, args []string) error {
