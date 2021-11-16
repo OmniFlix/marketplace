@@ -88,7 +88,7 @@ func queryAllListings(cliCtx client.Context) http.HandlerFunc {
 		}
 		owner := query.Get("owner")
 
-		collection, err := qc.Listings(
+		listings, err := qc.Listings(
 			context.Background(),
 			&types.QueryListingsRequest{
 				Owner:      owner,
@@ -99,7 +99,7 @@ func queryAllListings(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		rest.PostProcessResponse(w, cliCtx, collection)
+		rest.PostProcessResponse(w, cliCtx, listings)
 	}
 }
 
