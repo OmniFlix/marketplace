@@ -8,6 +8,7 @@ const (
 	FlagDenomId = "denom-id"
 	FlagNftId   = "nft-id"
 	FlagPrice   = "price"
+	FlagOwner   = "owner"
 )
 
 var (

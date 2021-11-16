@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkquery "github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/cosmos-sdk/types/rest"
 
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
@@ -66,29 +68,38 @@ func queryListing(cliCtx client.Context) http.HandlerFunc {
 // queryAllListings
 func queryAllListings(cliCtx client.Context) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		params := types.QueryAllListingsParams{}
-
-		bz, err := cliCtx.LegacyAmino.MarshalJSON(params)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())
-			return
-		}
-
 		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
 		if !ok {
 			return
 		}
-
-		res, height, err := cliCtx.QueryWithData(
-			fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryAllListings), bz,
+		var (
+			qc    = types.NewQueryClient(cliCtx)
+			query = r.URL.Query()
 		)
-		if err != nil {
-			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+
+		_, page, limit, err := rest.ParseHTTPArgs(r)
+		if rest.CheckBadRequestError(w, err) {
+			return
+		}
+		pageReq := sdkquery.PageRequest{
+			Offset:     uint64((page - 1) * limit),
+			Limit:      uint64(limit),
+			CountTotal: true,
+		}
+		owner := query.Get("owner")
+
+		collection, err := qc.Listings(
+			context.Background(),
+			&types.QueryListingsRequest{
+				Owner:      owner,
+				Pagination: &pageReq,
+			},
+		)
+		if rest.CheckInternalServerError(w, err) {
 			return
 		}
 
-		cliCtx = cliCtx.WithHeight(height)
-		rest.PostProcessResponse(w, cliCtx, res)
+		rest.PostProcessResponse(w, cliCtx, collection)
 	}
 }
 

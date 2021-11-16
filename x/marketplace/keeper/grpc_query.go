@@ -35,18 +35,37 @@ func (k Keeper) Listings(goCtx context.Context, req *types.QueryListingsRequest)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
 	var listings []types.Listing
 	var pageRes *query.PageResponse
 	store := ctx.KVStore(k.storeKey)
 
-	listingStore := prefix.NewStore(store, types.PrefixListingId)
-	pageRes, err := query.Paginate(listingStore, req.Pagination, func(key []byte, value []byte) error {
-		var listing types.Listing
-		k.cdc.Unmarshal(value, &listing)
-		listings = append(listings, listing)
-		return nil
-	})
+	var owner sdk.AccAddress
+	var err error
+	if len(req.Owner) > 0 {
+		owner, err = sdk.AccAddressFromBech32(req.Owner)
+		if err != nil {
+			return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("invalid owner address (%s)", err))
+		}
+		listingStore := prefix.NewStore(store, append(types.PrefixListingOwner, owner.Bytes()...))
+		pageRes, err = query.Paginate(listingStore, req.Pagination, func(key []byte, value []byte) error {
+			var listingId gogotypes.StringValue
+			k.cdc.MustUnmarshal(value, &listingId)
+			listing, found := k.GetListing(ctx, listingId.Value)
+			if found {
+				listings = append(listings, listing)
+			}
+			return nil
+		})
+
+	} else {
+		listingStore := prefix.NewStore(store, types.PrefixListingId)
+		pageRes, err = query.Paginate(listingStore, req.Pagination, func(key []byte, value []byte) error {
+			var listing types.Listing
+			k.cdc.MustUnmarshal(value, &listing)
+			listings = append(listings, listing)
+			return nil
+		})
+	}
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
 	}
@@ -76,7 +95,7 @@ func (k Keeper) ListingsByOwner(goCtx context.Context, req *types.QueryListingsB
 	listingStore := prefix.NewStore(store, append(types.PrefixListingOwner, owner.Bytes()...))
 	pageRes, err = query.Paginate(listingStore, req.Pagination, func(key []byte, value []byte) error {
 		var listingId gogotypes.StringValue
-		k.cdc.Unmarshal(value, &listingId)
+		k.cdc.MustUnmarshal(value, &listingId)
 		listing, found := k.GetListing(ctx, listingId.Value)
 		if found {
 			listings = append(listings, listing)

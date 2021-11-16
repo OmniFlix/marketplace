@@ -71,12 +71,16 @@ func GetCmdQueryListing() *cobra.Command {
 func GetCmdQueryAllListings() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "listings",
-		Long:    "Query all listings.",
+		Long:    "Query listings.",
 		Example: fmt.Sprintf("$ %s query marketplace listings", version.AppName),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
 			clientCtx, err := client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
 
+			if err != nil {
+				return err
+			}
+			owner, err := cmd.Flags().GetString(FlagOwner)
 			if err != nil {
 				return err
 			}
@@ -89,6 +93,7 @@ func GetCmdQueryAllListings() *cobra.Command {
 			resp, err := queryClient.Listings(
 				context.Background(),
 				&types.QueryListingsRequest{
+					Owner: owner,
 					Pagination: pageReq,
 				},
 			)
@@ -100,6 +105,7 @@ func GetCmdQueryAllListings() *cobra.Command {
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
+	cmd.Flags().String(FlagOwner, "", "filter by owner address")
 	flags.AddPaginationFlagsToCmd(cmd, "all listings")
 
 	return cmd

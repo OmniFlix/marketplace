@@ -23,7 +23,8 @@ service Query {
 }
 
 message QueryListingsRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  string                                owner      = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 message QueryListingsResponse {

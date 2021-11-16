@@ -196,7 +196,7 @@ func GetCmdBuyNft() *cobra.Command {
 			}
 
 			buyer := clientCtx.GetFromAddress()
-			listingId := strings.TrimSpace(args[0])
+			listingId := args[0]
 
 			priceStr, err := cmd.Flags().GetString(FlagPrice)
 			if err != nil {
