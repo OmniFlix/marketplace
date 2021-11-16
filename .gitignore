@@ -1,0 +1,4 @@
+.idea
+vue/node_modules
+vue/dist
+secret.yml

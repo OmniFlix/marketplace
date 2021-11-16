@@ -1,0 +1,60 @@
+syntax = "proto3";
+package OmniFlix.marketplace.v1beta1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
+option (gogoproto.goproto_getters_all) = false;
+
+service Msg {
+
+  rpc ListNFT(MsgListNFT) returns (MsgListNFTResponse);
+
+  rpc EditListing(MsgEditListing) returns (MsgEditListingResponse);
+
+  rpc DeListNFT(MsgDeListNFT) returns (MsgDeListNFTResponse);
+
+  rpc BuyNFT(MsgBuyNFT) returns (MsgBuyNFTResponse);
+
+}
+
+message MsgListNFT {
+  string                   id       = 1;
+  string                   nft_id   = 2;
+  string                   denom_id = 3;
+  cosmos.base.v1beta1.Coin price    = 4 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string                   owner    = 5;
+}
+message MsgListNFTResponse {}
+
+message MsgEditListing {
+  string                   id    = 1;
+  cosmos.base.v1beta1.Coin price = 2 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string                   owner = 3;
+}
+message MsgEditListingResponse {}
+
+message MsgDeListNFT {
+  string id    = 1;
+  string owner = 2;
+}
+
+message MsgDeListNFTResponse {}
+
+message MsgBuyNFT {
+  string                   id    = 1;
+  cosmos.base.v1beta1.Coin price = 2 [
+    (gogoproto.nullable)     = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string                   buyer = 3;
+}
+
+message MsgBuyNFTResponse {}
