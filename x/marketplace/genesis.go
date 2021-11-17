@@ -1,6 +1,8 @@
 package marketplace
 
 import (
+	"fmt"
+
 	"github.com/OmniFlix/marketplace/x/marketplace/keeper"
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -15,6 +17,12 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		k.SetListing(ctx, l)
 	}
 	k.SetListingCount(ctx, genState.ListingCount)
+
+	// check if the module account exists
+	moduleAcc := k.GetMarketplaceAccount(ctx)
+	if moduleAcc == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
 }
 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
