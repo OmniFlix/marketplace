@@ -29,6 +29,11 @@ func NewKeeper(
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,
 ) Keeper {
+	// ensure marketplace module account is set
+	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
+	}
+
 	return Keeper{
 		storeKey:      key,
 		cdc:           cdc,
