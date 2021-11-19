@@ -18,7 +18,7 @@ service Query {
   }
 
   rpc ListingsByOwner(QueryListingsByOwnerRequest) returns (QueryListingsByOwnerResponse) {
-    option (google.api.http).get = "/omniflix/marketplace/v1beta1/listings/{owner}";
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/listings-by-owner/{owner}";
   }
 }
 
