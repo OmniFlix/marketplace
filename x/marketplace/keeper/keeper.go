@@ -54,16 +54,6 @@ func (k Keeper) AddListing(ctx sdk.Context, listing types.Listing) error {
 	if k.HasListing(ctx, listing.GetId()) {
 		return sdkerrors.Wrapf(types.ErrListingAlreadyExists, "listing already exists: %s", listing.GetId())
 	}
-	// set listing
-	k.SetListing(ctx, listing)
-	if len(listing.GetOwner()) != 0 {
-		// set listing id with owner prefix
-		k.setWithOwner(ctx, listing.GetOwner(), listing.GetId())
-	}
-
-	// Update listing count
-	count := k.GetListingCount(ctx)
-	k.SetListingCount(ctx, count+1)
 
 	err := k.nftKeeper.TransferOwnership(ctx,
 		listing.GetDenomId(), listing.GetNftId(), listing.GetOwner(),
@@ -72,12 +62,28 @@ func (k Keeper) AddListing(ctx sdk.Context, listing types.Listing) error {
 	if err != nil {
 		return err
 	}
+	// set listing
+	k.SetListing(ctx, listing)
+	if len(listing.GetOwner()) != 0 {
+		// set listing id with owner prefix
+		k.SetWithOwner(ctx, listing.GetOwner(), listing.GetId())
+	}
+	// Update listing count
+	count := k.GetListingCount(ctx)
+	k.SetListingCount(ctx, count+1)
+	k.SetWithNFTID(ctx, listing.NftId, listing.Id)
+
+	if len(listing.Price.Denom) > 0 {
+		k.SetWithPriceDenom(ctx, listing.Price.Denom, listing.Id)
+	}
 	return nil
 }
 
 func (k Keeper) DeleteListing(ctx sdk.Context, listing types.Listing) {
 	k.RemoveListing(ctx, listing.GetId())
-	k.unsetWithOwner(ctx, listing.GetOwner(), listing.GetId())
+	k.UnsetWithOwner(ctx, listing.GetOwner(), listing.GetId())
+	k.UnsetWithNFTID(ctx, listing.GetNftId())
+	k.UnsetWithPriceDenom(ctx, listing.Price.Denom, listing.GetId())
 }
 
 func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress) error {

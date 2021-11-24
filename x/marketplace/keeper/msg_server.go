@@ -40,7 +40,10 @@ func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types
 	}
 
 	listing := types.NewListing(msg.Id, msg.NftId, msg.DenomId, msg.Price, owner)
-	_ = m.Keeper.AddListing(ctx, listing)
+	err = m.Keeper.AddListing(ctx, listing)
+	if err != nil {
+		return nil, err
+	}
 
 	ctx.EventManager().EmitTypedEvent(
 		&types.EventListNFT{

@@ -50,6 +50,18 @@ func (k Keeper) GetListing(ctx sdk.Context, id string) (val types.Listing, found
 	return val, true
 }
 
+// GetListing returns a listing from its nft id
+func (k Keeper) GetListingIdByNftId(ctx sdk.Context, nftId string) (val string, found bool) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixListingNFTID)
+	b := store.Get(types.KeyListingNFTIDPrefix(nftId))
+	if b == nil {
+		return val, false
+	}
+	var listingId gogotypes.StringValue
+	k.cdc.MustUnmarshal(b, &listingId)
+	return listingId.Value, true
+}
+
 // RemoveListing removes a listing from the store
 func (k Keeper) RemoveListing(ctx sdk.Context, id string) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixListingId)
@@ -97,13 +109,34 @@ func (k Keeper) HasListing(ctx sdk.Context, id string) bool {
 	return store.Has(types.KeyListingIdPrefix(id))
 }
 
-func (k Keeper) setWithOwner(ctx sdk.Context, owner sdk.AccAddress, id string) {
+func (k Keeper) SetWithOwner(ctx sdk.Context, owner sdk.AccAddress, id string) {
 	store := ctx.KVStore(k.storeKey)
 	bz := k.cdc.MustMarshal(&gogotypes.StringValue{Value: id})
 
 	store.Set(types.KeyListingOwnerPrefix(owner, id), bz)
 }
-func (k Keeper) unsetWithOwner(ctx sdk.Context, owner sdk.AccAddress, id string) {
+func (k Keeper) UnsetWithOwner(ctx sdk.Context, owner sdk.AccAddress, id string) {
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyListingOwnerPrefix(owner, id))
+}
+
+func (k Keeper) SetWithNFTID(ctx sdk.Context, nftId, id string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixListingNFTID)
+	bz := k.cdc.MustMarshal(&gogotypes.StringValue{Value: id})
+	store.Set(types.KeyListingNFTIDPrefix(nftId), bz)
+}
+func (k Keeper) UnsetWithNFTID(ctx sdk.Context, nftId string) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixListingNFTID)
+	store.Delete(types.KeyListingNFTIDPrefix(nftId))
+}
+
+func (k Keeper) SetWithPriceDenom(ctx sdk.Context, priceDenom, id string) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&gogotypes.StringValue{Value: id})
+
+	store.Set(types.KeyListingPriceDenomPrefix(priceDenom, id), bz)
+}
+func (k Keeper) UnsetWithPriceDenom(ctx sdk.Context, priceDenom, id string) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyListingPriceDenomPrefix(priceDenom, id))
 }
