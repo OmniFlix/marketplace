@@ -350,7 +350,7 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 	app.ONFTKeeper = onftkeeper.NewKeeper(appCodec, keys[onfttypes.StoreKey])
-	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper, app.AccountKeeper, app.BankKeeper)
+	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper)
 	app.MarketplaceKeeper = marketplacemodulekeeper.NewKeeper(
 		appCodec,
 		keys[marketplacemoduletypes.StoreKey],
