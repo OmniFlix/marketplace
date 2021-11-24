@@ -15,6 +15,9 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	}
 	for _, l := range genState.Listings {
 		k.SetListing(ctx, l)
+		k.SetWithOwner(ctx, l.GetOwner(), l.GetId())
+		k.SetWithNFTID(ctx, l.GetNftId(), l.GetId())
+		k.SetWithPriceDenom(ctx, l.Price.GetDenom(), l.GetId())
 	}
 	k.SetListingCount(ctx, genState.ListingCount)
 
