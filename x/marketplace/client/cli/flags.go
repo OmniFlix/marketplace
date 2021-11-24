@@ -5,10 +5,11 @@ import (
 )
 
 const (
-	FlagDenomId = "denom-id"
-	FlagNftId   = "nft-id"
-	FlagPrice   = "price"
-	FlagOwner   = "owner"
+	FlagDenomId    = "denom-id"
+	FlagNftId      = "nft-id"
+	FlagPrice      = "price"
+	FlagOwner      = "owner"
+	FlagPriceDenom = "price-denom"
 )
 
 var (

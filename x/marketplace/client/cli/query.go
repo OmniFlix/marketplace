@@ -84,6 +84,10 @@ func GetCmdQueryAllListings() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			priceDenom, err := cmd.Flags().GetString(FlagPriceDenom)
+			if err != nil {
+				return err
+			}
 
 			queryClient := types.NewQueryClient(clientCtx)
 			pageReq, err := client.ReadPageRequest(cmd.Flags())
@@ -93,7 +97,8 @@ func GetCmdQueryAllListings() *cobra.Command {
 			resp, err := queryClient.Listings(
 				context.Background(),
 				&types.QueryListingsRequest{
-					Owner: owner,
+					Owner:      owner,
+					PriceDenom: priceDenom,
 					Pagination: pageReq,
 				},
 			)
@@ -106,6 +111,7 @@ func GetCmdQueryAllListings() *cobra.Command {
 	}
 	flags.AddQueryFlagsToCmd(cmd)
 	cmd.Flags().String(FlagOwner, "", "filter by owner address")
+	cmd.Flags().String(FlagPriceDenom, "", "filter by listing price-denom")
 	flags.AddPaginationFlagsToCmd(cmd, "all listings")
 
 	return cmd

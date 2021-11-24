@@ -57,7 +57,19 @@ func (k Keeper) Listings(goCtx context.Context, req *types.QueryListingsRequest)
 			return nil
 		})
 
+	} else if len(req.PriceDenom) > 0 {
+		listingStore := prefix.NewStore(store, types.KeyListingPriceDenomPrefix(req.PriceDenom, ""))
+		pageRes, err = query.Paginate(listingStore, req.Pagination, func(key []byte, value []byte) error {
+			var listingId gogotypes.StringValue
+			k.cdc.MustUnmarshal(value, &listingId)
+			listing, found := k.GetListing(ctx, listingId.Value)
+			if found {
+				listings = append(listings, listing)
+			}
+			return nil
+		})
 	} else {
+
 		listingStore := prefix.NewStore(store, types.PrefixListingId)
 		pageRes, err = query.Paginate(listingStore, req.Pagination, func(key []byte, value []byte) error {
 			var listing types.Listing
@@ -107,4 +119,63 @@ func (k Keeper) ListingsByOwner(goCtx context.Context, req *types.QueryListingsB
 	}
 
 	return &types.QueryListingsByOwnerResponse{Listings: listings, Pagination: pageRes}, nil
+}
+
+func (k Keeper) ListingsByPriceDenom(
+	goCtx context.Context,
+	req *types.QueryListingsByPriceDenomRequest,
+) (*types.QueryListingsByPriceDenomResponse, error) {
+
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	var err error
+
+	var listings []types.Listing
+	var pageRes *query.PageResponse
+	store := ctx.KVStore(k.storeKey)
+
+	listingStore := prefix.NewStore(store, types.KeyListingPriceDenomPrefix(req.PriceDenom, ""))
+	pageRes, err = query.Paginate(listingStore, req.Pagination, func(key []byte, value []byte) error {
+		var listingId gogotypes.StringValue
+		k.cdc.MustUnmarshal(value, &listingId)
+		listing, found := k.GetListing(ctx, listingId.Value)
+		if found {
+			listings = append(listings, listing)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
+	}
+
+	return &types.QueryListingsByPriceDenomResponse{Listings: listings, Pagination: pageRes}, nil
+}
+
+func (k Keeper) ListingByNftId(
+	goCtx context.Context,
+	req *types.QueryListingByNFTIDRequest,
+) (*types.QueryListingResponse, error) {
+
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "empty request")
+	}
+	if req.NftId == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "need nft id to request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	listingId, found := k.GetListingIdByNftId(ctx, req.NftId)
+	if found {
+		listing, err := k.Listing(goCtx, &types.QueryListingRequest{
+			Id: listingId,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return listing, nil
+	}
+	return nil, status.Errorf(codes.NotFound, "listing not found with given nft id")
 }

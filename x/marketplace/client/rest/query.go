@@ -87,11 +87,13 @@ func queryAllListings(cliCtx client.Context) http.HandlerFunc {
 			CountTotal: true,
 		}
 		owner := query.Get("owner")
+		priceDenom := query.Get("priceDenom")
 
 		listings, err := qc.Listings(
 			context.Background(),
 			&types.QueryListingsRequest{
 				Owner:      owner,
+				PriceDenom: priceDenom,
 				Pagination: &pageReq,
 			},
 		)
