@@ -3,7 +3,7 @@ module github.com/OmniFlix/marketplace
 go 1.16
 
 require (
-	github.com/OmniFlix/onft v0.2.0-rc5
+	github.com/OmniFlix/onft v0.2.0
 	github.com/cosmos/cosmos-sdk v0.44.3
 	github.com/cosmos/ibc-go v1.2.2
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
