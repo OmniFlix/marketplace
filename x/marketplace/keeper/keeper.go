@@ -8,6 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 )
@@ -16,9 +17,11 @@ type Keeper struct {
 	storeKey sdk.StoreKey
 	cdc      codec.BinaryCodec
 
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
-	nftKeeper     types.NftKeeper
+	accountKeeper      types.AccountKeeper
+	bankKeeper         types.BankKeeper
+	nftKeeper          types.NftKeeper
+	distributionKeeper types.DistributionKeeper
+	paramSpace         paramstypes.Subspace
 }
 
 func NewKeeper(
@@ -28,18 +31,27 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,
+	distrKeeper types.DistributionKeeper,
+	paramSpace paramstypes.Subspace,
 ) Keeper {
 	// ensure marketplace module account is set
 	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
 
+	// set KeyTable if it has not already been set
+	if !paramSpace.HasKeyTable() {
+		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
+	}
+
 	return Keeper{
-		storeKey:      key,
-		cdc:           cdc,
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
-		nftKeeper:     nftKeeper,
+		storeKey:           key,
+		cdc:                cdc,
+		accountKeeper:      accountKeeper,
+		bankKeeper:         bankKeeper,
+		nftKeeper:          nftKeeper,
+		distributionKeeper: distrKeeper,
+		paramSpace:         paramSpace,
 	}
 }
 
@@ -102,10 +114,27 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 		_ = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, buyer, sdk.NewCoins(listing.Price))
 		return err
 	}
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(listing.Price))
+	saleCommission := k.GetSaleCommission(ctx)
+	marketplaceCoin := k.GetProportions(ctx, listing.Price, saleCommission)
+	ownerCoin := listing.Price.Sub(marketplaceCoin)
+
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(ownerCoin))
 	if err != nil {
 		return err
 	}
+	err = k.distributionKeeper.FundCommunityPool(
+		ctx,
+		sdk.NewCoins(marketplaceCoin),
+		k.accountKeeper.GetModuleAddress(types.ModuleName),
+	)
+	if err != nil {
+		return err
+	}
+
 	k.DeleteListing(ctx, listing)
 	return nil
+}
+
+func (k Keeper) GetProportions(ctx sdk.Context, totalCoin sdk.Coin, ratio sdk.Dec) sdk.Coin {
+	return sdk.NewCoin(totalCoin.Denom, totalCoin.Amount.ToDec().Mul(ratio).TruncateInt())
 }

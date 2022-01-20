@@ -357,6 +357,8 @@ func New(
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.ONFTKeeper,
+		app.DistrKeeper,
+		app.GetSubspace(marketplacemoduletypes.ModuleName),
 	)
 	marketplaceModule := marketplacemodule.NewAppModule(appCodec, app.MarketplaceKeeper)
 

@@ -28,3 +28,8 @@ type NftKeeper interface {
 	GetDenom(ctx sdk.Context, denomId string) (nftypes.Denom, error)
 	TransferOwnership(ctx sdk.Context, denomId, nftId string, srcOwner, dstOwner sdk.AccAddress) error
 }
+
+// DistributionKeeper defines the expected distribution keeper
+type DistributionKeeper interface {
+	FundCommunityPool(ctx sdk.Context, amount sdk.Coins, sender sdk.AccAddress) error
+}

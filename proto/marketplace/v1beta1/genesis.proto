@@ -10,4 +10,5 @@ message GenesisState {
   // NFTs that are listed in marketplace
   repeated Listing listings     = 1 [(gogoproto.nullable) = false];
   uint64           ListingCount = 2;
+  Params           params       = 3 [(gogoproto.nullable) = false];
 }

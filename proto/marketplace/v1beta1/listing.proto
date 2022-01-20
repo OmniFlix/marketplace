@@ -18,3 +18,12 @@ message Listing {
   ];
   string                   owner    = 5 [(gogoproto.moretags) = "yaml:\"owner\""];
 }
+
+
+message Params {
+  string sale_commission = 1 [
+    (gogoproto.moretags)   = "yaml:\"sale_commission\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
+}
