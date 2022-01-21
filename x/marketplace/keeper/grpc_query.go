@@ -15,6 +15,15 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
+// Params queries params of marketplace module
+func (k Keeper) Params(c context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	var params types.Params
+	k.paramSpace.GetParamSet(ctx, &params)
+
+	return &types.QueryParamsResponse{Params: params}, nil
+}
+
 func (k Keeper) Listing(goCtx context.Context, req *types.QueryListingRequest) (*types.QueryListingResponse, error) {
 	if req == nil {
 		return nil, status.Errorf(codes.InvalidArgument, "empty request")

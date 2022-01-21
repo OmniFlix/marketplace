@@ -3,7 +3,6 @@ package keeper
 import (
 	"fmt"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -122,6 +121,7 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 	if err != nil {
 		return err
 	}
+
 	err = k.distributionKeeper.FundCommunityPool(
 		ctx,
 		sdk.NewCoins(marketplaceCoin),
@@ -130,6 +130,12 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 	if err != nil {
 		return err
 	}
+
+	 /*
+	err = k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, authtypes.FeeCollectorName, sdk.NewCoins(marketplaceCoin))
+	if err != nil {
+		return err
+	} */
 
 	k.DeleteListing(ctx, listing)
 	return nil

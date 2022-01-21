@@ -18,6 +18,10 @@ import (
 
 func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 
+	r.HandleFunc(fmt.Sprintf("/%s/parameters", types.ModuleName),
+		queryParams(cliCtx),
+	).Methods("GET")
+
 	r.HandleFunc(fmt.Sprintf("/%s/listing/{%s}",
 		types.ModuleName, RestParamListingId),
 		queryListing(cliCtx),
@@ -30,6 +34,27 @@ func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
 	r.HandleFunc(fmt.Sprintf("/%s/listings/{%s}", types.ModuleName, RestParamOwner),
 		queryListingsByOwner(cliCtx),
 	).Methods("GET")
+}
+
+// queryParams
+func queryParams(cliCtx client.Context) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cliCtx, ok := rest.ParseQueryHeightOrReturnBadRequest(w, cliCtx, r)
+		if !ok {
+			return
+		}
+
+		res, height, err := cliCtx.QueryWithData(
+			fmt.Sprintf("custom/%s/%s", types.QuerierRoute, types.QueryParams), nil,
+		)
+		if err != nil {
+			rest.WriteErrorResponse(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		cliCtx = cliCtx.WithHeight(height)
+		rest.PostProcessResponse(w, cliCtx, res)
+	}
 }
 
 // queryListing
