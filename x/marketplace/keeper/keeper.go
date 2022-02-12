@@ -3,6 +3,7 @@ package keeper
 import (
 	"fmt"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -102,8 +103,9 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 	if err != nil {
 		return err
 	}
+	listingPriceCoin := listing.Price
 
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, buyer, types.ModuleName, sdk.NewCoins(listing.Price))
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, buyer, types.ModuleName, sdk.NewCoins(listingPriceCoin))
 	if err != nil {
 		return err
 	}
@@ -115,15 +117,11 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 	}
 	saleCommission := k.GetSaleCommission(ctx)
 	marketplaceCoin := k.GetProportions(ctx, listing.Price, saleCommission)
-	listingSaleCoin := listing.Price.Sub(marketplaceCoin)
-	err = k.distributionKeeper.FundCommunityPool(
-		ctx,
-		sdk.NewCoins(marketplaceCoin),
-		k.accountKeeper.GetModuleAddress(types.ModuleName),
-	)
+	err = k.DistributeCommission(ctx, marketplaceCoin)
 	if err != nil {
 		return err
 	}
+	listingSaleCoin := listingPriceCoin.Sub(marketplaceCoin)
 
 	if len(listing.SplitShares) > 0 {
 		for _, share := range listing.SplitShares {
@@ -158,4 +156,27 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 
 func (k Keeper) GetProportions(ctx sdk.Context, totalCoin sdk.Coin, ratio sdk.Dec) sdk.Coin {
 	return sdk.NewCoin(totalCoin.Denom, totalCoin.Amount.ToDec().Mul(ratio).TruncateInt())
+}
+
+func (k Keeper) DistributeCommission(ctx sdk.Context, marketplaceCoin sdk.Coin) error {
+	distrParams := k.GetMarketplaceDistributionParams(ctx)
+	if distrParams.Staking.GT(sdk.ZeroDec()) {
+		stakingCommissionCoins := sdk.NewCoins(k.GetProportions(ctx, marketplaceCoin, distrParams.Staking))
+		err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, authtypes.FeeCollectorName, stakingCommissionCoins)
+		if err != nil {
+			return err
+		}
+	}
+	if distrParams.CommunityPool.GT(sdk.ZeroDec()) {
+		communityPoolCommissionCoins := sdk.NewCoins(k.GetProportions(ctx, marketplaceCoin, distrParams.CommunityPool))
+		err := k.distributionKeeper.FundCommunityPool(
+			ctx,
+			communityPoolCommissionCoins,
+			k.accountKeeper.GetModuleAddress(types.ModuleName),
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

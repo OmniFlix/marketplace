@@ -21,3 +21,9 @@ func (k Keeper) GetSaleCommission(ctx sdk.Context) (percent sdk.Dec) {
 	k.paramSpace.Get(ctx, types.ParamStoreKeySaleCommission, &percent)
 	return percent
 }
+
+// GetMarketplaceDistributionParams returns the current distribution  of marketplace commission.
+func (k Keeper) GetMarketplaceDistributionParams(ctx sdk.Context) (distParams types.Distribution) {
+	k.paramSpace.Get(ctx, types.ParamStoreKeyDistribution, &distParams)
+	return distParams
+}
