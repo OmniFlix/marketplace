@@ -3,6 +3,7 @@ package OmniFlix.marketplace.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "marketplace/v1beta1/listing.proto";
+import "marketplace/v1beta1/params.proto";
 
 option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
 
