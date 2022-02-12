@@ -2,6 +2,7 @@ syntax = "proto3";
 package OmniFlix.marketplace.v1beta1;
 
 import "cosmos/base/v1beta1/coin.proto";
+import "marketplace/v1beta1/listing.proto";
 import "gogoproto/gogo.proto";
 
 option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
@@ -20,14 +21,18 @@ service Msg {
 }
 
 message MsgListNFT {
-  string                   id       = 1;
-  string                   nft_id   = 2;
-  string                   denom_id = 3;
-  cosmos.base.v1beta1.Coin price    = 4 [
+  string                   id           = 1;
+  string                   nft_id       = 2;
+  string                   denom_id     = 3;
+  cosmos.base.v1beta1.Coin price        = 4 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  string                   owner    = 5;
+  string                   owner        = 5;
+  repeated WeightedAddress split_shares = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.moretags) = "yaml:\"split_shares\""
+  ];
 }
 message MsgListNFTResponse {}
 
