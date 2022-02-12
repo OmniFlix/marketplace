@@ -19,4 +19,5 @@ var (
 	ErrUnauthorized         = sdkerrors.Register(ModuleName, 12, "unauthorized")
 	ErrNftNonTransferable   = sdkerrors.Register(ModuleName, 13, "non-transferable nft")
 	ErrListingDoesNotExists = sdkerrors.Register(ModuleName, 14, "listing doesn't exists")
+	ErrInvalidSplits        = sdkerrors.Register(ModuleName, 15, "invalid split shares")
 )
