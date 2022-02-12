@@ -9,7 +9,8 @@ import (
 
 // Parameter keys
 var (
-	ParamStoreKeySaleCommission       = []byte("salecommission")
+	ParamStoreKeySaleCommission = []byte("SaleCommission")
+	ParamStoreKeyDistribution   = []byte("MarketplaceDistribution")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -22,7 +23,7 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns default marketplace parameters
 func DefaultParams() Params {
 	return Params{
-		SaleCommission:        sdk.NewDecWithPrec(1, 2), // 2%
+		SaleCommission: sdk.NewDecWithPrec(1, 2), // 2%
 	}
 }
 
@@ -30,6 +31,7 @@ func DefaultParams() Params {
 func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(ParamStoreKeySaleCommission, &p.SaleCommission, validateSaleCommission),
+		paramtypes.NewParamSetPair(ParamStoreKeyDistribution, &p.Distribution, validateMarketplaceDistributionParams),
 	}
 }
 
@@ -59,5 +61,61 @@ func validateSaleCommission(i interface{}) error {
 		return fmt.Errorf("sale commission too large: %s", v)
 	}
 
+	return nil
+}
+func validateStakingDistribution(i interface{}) error {
+	v, ok := i.(sdk.Dec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v.IsNil() {
+		return fmt.Errorf("staking distribution value must be not nil")
+	}
+	if v.IsNegative() {
+		return fmt.Errorf("staking distribution value must be positive: %s", v)
+	}
+	if v.GT(sdk.OneDec()) {
+		return fmt.Errorf("staking distribution value too large: %s", v)
+	}
+
+	return nil
+}
+
+func validateCommunityPoolDistribution(i interface{}) error {
+	v, ok := i.(sdk.Dec)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v.IsNil() {
+		return fmt.Errorf("community pool distribution value must be not nil")
+	}
+	if v.IsNegative() {
+		return fmt.Errorf("community pool distribution value must be positive: %s", v)
+	}
+	if v.GT(sdk.OneDec()) {
+		return fmt.Errorf("community pool distribution value too large: %s", v)
+	}
+
+	return nil
+}
+
+func validateMarketplaceDistributionParams(i interface{}) error {
+	v, ok := i.(Distribution)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	err := validateStakingDistribution(v.Staking)
+	if err != nil {
+		return err
+	}
+	err = validateCommunityPoolDistribution(v.CommunityPool)
+	if err != nil {
+		return err
+	}
+	if !v.Staking.Add(v.CommunityPool).Equal(sdk.OneDec()) {
+		return fmt.Errorf("marketplace distribtution commission params sum must be equal to : %d", 1)
+	}
 	return nil
 }
