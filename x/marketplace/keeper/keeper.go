@@ -115,13 +115,7 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 	}
 	saleCommission := k.GetSaleCommission(ctx)
 	marketplaceCoin := k.GetProportions(ctx, listing.Price, saleCommission)
-	ownerCoin := listing.Price.Sub(marketplaceCoin)
-
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(ownerCoin))
-	if err != nil {
-		return err
-	}
-
+	listingSaleCoin := listing.Price.Sub(marketplaceCoin)
 	err = k.distributionKeeper.FundCommunityPool(
 		ctx,
 		sdk.NewCoins(marketplaceCoin),
@@ -131,11 +125,32 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 		return err
 	}
 
-	 /*
-	err = k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, authtypes.FeeCollectorName, sdk.NewCoins(marketplaceCoin))
-	if err != nil {
-		return err
-	} */
+	if len(listing.SplitShares) > 0 {
+		for _, share := range listing.SplitShares {
+			sharePortionCoins := sdk.NewCoins(k.GetProportions(ctx, listingSaleCoin, share.Weight))
+			if share.Address == "" {
+				err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sharePortionCoins)
+				if err != nil {
+					return err
+				}
+			} else {
+				saleSplitAddr, err := sdk.AccAddressFromBech32(share.Address)
+				if err != nil {
+					return err
+				}
+				err = k.bankKeeper.SendCoinsFromModuleToAccount(
+					ctx, types.ModuleName, saleSplitAddr, sharePortionCoins)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	} else {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(listingSaleCoin))
+		if err != nil {
+			return err
+		}
+	}
 
 	k.DeleteListing(ctx, listing)
 	return nil

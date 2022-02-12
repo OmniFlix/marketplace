@@ -25,13 +25,14 @@ var (
 	_ sdk.Msg = &MsgBuyNFT{}
 )
 
-func NewMsgListNFT(denomId, nftId string, price sdk.Coin, owner sdk.AccAddress) *MsgListNFT {
+func NewMsgListNFT(denomId, nftId string, price sdk.Coin, owner sdk.AccAddress, splitShares []WeightedAddress) *MsgListNFT {
 	return &MsgListNFT{
-		Id:      GenUniqueID(IdPrefix),
-		NftId:   nftId,
-		DenomId: denomId,
-		Price:   price,
-		Owner:   owner.String(),
+		Id:          GenUniqueID(IdPrefix),
+		NftId:       nftId,
+		DenomId:     denomId,
+		Price:       price,
+		Owner:       owner.String(),
+		SplitShares: splitShares,
 	}
 }
 
@@ -47,6 +48,7 @@ func (msg MsgListNFT) ValidateBasic() error {
 			msg.DenomId,
 			msg.Price,
 			sdk.AccAddress(msg.Owner),
+			msg.SplitShares,
 		),
 	)
 }

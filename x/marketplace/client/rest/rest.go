@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	"github.com/gorilla/mux"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -22,11 +23,12 @@ func RegisterHandlers(cliCtx client.Context, r *mux.Router) {
 }
 
 type listNftReq struct {
-	BaseReq rest.BaseReq `json:"base_req"`
-	DenomId string       `json:"denom_id"`
-	NftId   string       `json:"nft_id"`
-	Price   string       `json:"price"`
-	Owner   string       `json:"owner"`
+	BaseReq     rest.BaseReq            `json:"base_req"`
+	DenomId     string                  `json:"denom_id"`
+	NftId       string                  `json:"nft_id"`
+	Price       string                  `json:"price"`
+	Owner       string                  `json:"owner"`
+	SplitShares []types.WeightedAddress `json:"split_shares"`
 }
 type editListingReq struct {
 	BaseReq rest.BaseReq `json:"base_req"`

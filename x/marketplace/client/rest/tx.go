@@ -61,7 +61,7 @@ func ListNft(cliCtx client.Context) http.HandlerFunc {
 			return
 		}
 
-		msg := types.NewMsgListNFT(req.DenomId, req.NftId, price, owner)
+		msg := types.NewMsgListNFT(req.DenomId, req.NftId, price, owner, req.SplitShares)
 
 		if err := msg.ValidateBasic(); err != nil {
 			rest.WriteErrorResponse(w, http.StatusBadRequest, err.Error())

@@ -39,7 +39,7 @@ func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types
 			types.ErrNftNonTransferable, "non-transferable nfts not allowed to list in marketplace")
 	}
 
-	listing := types.NewListing(msg.Id, msg.NftId, msg.DenomId, msg.Price, owner)
+	listing := types.NewListing(msg.Id, msg.NftId, msg.DenomId, msg.Price, owner, msg.SplitShares)
 	err = m.Keeper.AddListing(ctx, listing)
 	if err != nil {
 		return nil, err
