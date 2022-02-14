@@ -69,8 +69,8 @@ func ValidateSplitShares(splitShares []WeightedAddress) error {
 		}
 		totalWeight = totalWeight.Add(share.Weight)
 	}
-	if !totalWeight.Equal(sdk.NewDec(1)) {
-		return sdkerrors.Wrapf(ErrInvalidSplits, "invalid weights, total sum of weights must be equal to %d", 1)
+	if !totalWeight.LTE(sdk.OneDec()) {
+		return sdkerrors.Wrapf(ErrInvalidSplits, "invalid weights, total sum of weights must be less than %d", 1)
 	}
 	return nil
 }

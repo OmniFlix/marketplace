@@ -1,0 +1,92 @@
+package keeper
+
+import (
+	"github.com/OmniFlix/marketplace/x/marketplace/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+func (k *Keeper) createListNftEvent(ctx sdk.Context, owner sdk.AccAddress, listingId, denomId, nftId string, price sdk.Coin) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeListNFT,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(types.AttributeKeyOwner, owner.String()),
+			sdk.NewAttribute(types.AttributeKeyListingId, listingId),
+			sdk.NewAttribute(types.AttributeKeyDenomId, denomId),
+			sdk.NewAttribute(types.AttributeKeyNftId, nftId),
+			sdk.NewAttribute(types.AttributeKeyAmount, price.String()),
+		),
+	})
+}
+
+func (k *Keeper) createDeListNftEvent(ctx sdk.Context, sender sdk.AccAddress, listingId string) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeDeListNFT,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
+			sdk.NewAttribute(types.AttributeKeyListingId, listingId),
+		),
+	})
+}
+
+func (k *Keeper) createEditListingEvent(ctx sdk.Context, sender sdk.AccAddress, listingId string, price sdk.Coin) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeEditListing,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
+			sdk.NewAttribute(types.AttributeKeyListingId, listingId),
+			sdk.NewAttribute(types.AttributeKeyAmount, price.String()),
+		),
+	})
+}
+
+func (k *Keeper) createBuyNftEvent(ctx sdk.Context, buyer sdk.AccAddress, listId, nftId string, price sdk.Coin) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeBuyNFT,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(types.AttributeKeyBuyer, buyer.String()),
+			sdk.NewAttribute(types.AttributeKeyListingId, listId),
+			sdk.NewAttribute(types.AttributeKeyNftId, nftId),
+			sdk.NewAttribute(types.AttributeKeyAmount, price.String()),
+		),
+	})
+}
+
+func (k *Keeper) createRoyaltyShareTransferEvent(ctx sdk.Context, sender, recipient sdk.AccAddress, amount sdk.Coin) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeRoyaltyShareTransfer,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
+			sdk.NewAttribute(types.AttributeKeyRecipient, recipient.String()),
+			sdk.NewAttribute(types.AttributeKeyAmount, amount.String()),
+		),
+	})
+}
+
+func (k *Keeper) createSplitShareTransferEvent(ctx sdk.Context, sender, recipient sdk.AccAddress, amount sdk.Coin) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeSplitShareTransfer,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
+			sdk.NewAttribute(types.AttributeKeyRecipient, recipient.String()),
+			sdk.NewAttribute(types.AttributeKeyAmount, amount.String()),
+		),
+	})
+}
+
+func (k *Keeper) createSaleCommissionTransferEvent(ctx sdk.Context, sender, recipient sdk.AccAddress, amount sdk.Coin) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeSaleCommissionTransfer,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(sdk.AttributeKeySender, sender.String()),
+			sdk.NewAttribute(types.AttributeKeyRecipient, recipient.String()),
+			sdk.NewAttribute(types.AttributeKeyAmount, amount.String()),
+		),
+	})
+}

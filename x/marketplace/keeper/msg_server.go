@@ -45,14 +45,7 @@ func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventListNFT{
-			Id:      listing.Id,
-			NftId:   listing.NftId,
-			DenomId: listing.DenomId,
-			Owner:   listing.Owner,
-		},
-	)
+	m.Keeper.createListNftEvent(ctx, owner, listing.Id, listing.DenomId, listing.NftId, listing.Price)
 
 	return &types.MsgListNFTResponse{}, nil
 }
@@ -79,14 +72,7 @@ func (m msgServer) EditListing(goCtx context.Context,
 	listing.Price = msg.Price
 	m.Keeper.SetListing(ctx, listing)
 
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventEditListing{
-			Id:      listing.Id,
-			NftId:   listing.NftId,
-			DenomId: listing.DenomId,
-			Owner:   listing.Owner,
-		},
-	)
+	m.Keeper.createEditListingEvent(ctx, owner, listing.Id, listing.Price)
 
 	return &types.MsgEditListingResponse{}, nil
 }
@@ -113,14 +99,7 @@ func (m msgServer) DeListNFT(goCtx context.Context,
 	}
 	m.Keeper.DeleteListing(ctx, listing)
 
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventDeListNFT{
-			Id:      listing.Id,
-			NftId:   listing.NftId,
-			DenomId: listing.DenomId,
-			Owner:   listing.Owner,
-		},
-	)
+	m.Keeper.createDeListNftEvent(ctx, owner, listing.Id)
 
 	return &types.MsgDeListNFTResponse{}, nil
 }
@@ -156,15 +135,7 @@ func (m msgServer) BuyNFT(goCtx context.Context, msg *types.MsgBuyNFT) (*types.M
 		return nil, err
 	}
 
-	ctx.EventManager().EmitTypedEvent(
-		&types.EventBuyNFT{
-			Id:      listing.Id,
-			NftId:   listing.NftId,
-			DenomId: listing.DenomId,
-			Owner:   listing.Owner,
-			Buyer:   msg.Buyer,
-		},
-	)
+	m.Keeper.createBuyNftEvent(ctx, buyer, listing.Id, listing.NftId, listing.Price)
 
 	return &types.MsgBuyNFTResponse{}, nil
 }
