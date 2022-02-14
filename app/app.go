@@ -351,7 +351,7 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 	app.ONFTKeeper = onftkeeper.NewKeeper(appCodec, keys[onfttypes.StoreKey])
-	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper)
+	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper, app.AccountKeeper, app.BankKeeper)
 	app.MarketplaceKeeper = marketplacemodulekeeper.NewKeeper(
 		appCodec,
 		keys[marketplacemoduletypes.StoreKey],
@@ -425,8 +425,7 @@ func New(
 		feegrant.ModuleName, marketplacemoduletypes.ModuleName, onfttypes.ModuleName, ibctransfertypes.ModuleName, authtypes.ModuleName,
 		vestingtypes.ModuleName, genutiltypes.ModuleName,
 		paramstypes.ModuleName, banktypes.ModuleName,
-		)
-
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
