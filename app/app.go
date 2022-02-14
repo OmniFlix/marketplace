@@ -26,6 +26,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -350,13 +351,15 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 	app.ONFTKeeper = onftkeeper.NewKeeper(appCodec, keys[onfttypes.StoreKey])
-	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper)
+	onftModule := onft.NewAppModule(appCodec, app.ONFTKeeper, app.AccountKeeper, app.BankKeeper)
 	app.MarketplaceKeeper = marketplacemodulekeeper.NewKeeper(
 		appCodec,
 		keys[marketplacemoduletypes.StoreKey],
 		app.AccountKeeper,
 		app.BankKeeper,
 		app.ONFTKeeper,
+		app.DistrKeeper,
+		app.GetSubspace(marketplacemoduletypes.ModuleName),
 	)
 	marketplaceModule := marketplacemodule.NewAppModule(appCodec, app.MarketplaceKeeper)
 
@@ -410,10 +413,19 @@ func New(
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
 		evidencetypes.ModuleName, stakingtypes.ModuleName, ibchost.ModuleName,
-		feegrant.ModuleName,
+		feegrant.ModuleName, marketplacemoduletypes.ModuleName, onfttypes.ModuleName, ibctransfertypes.ModuleName, authtypes.ModuleName,
+		vestingtypes.ModuleName, govtypes.ModuleName, genutiltypes.ModuleName, crisistypes.ModuleName,
+		paramstypes.ModuleName, banktypes.ModuleName,
 	)
 
-	app.mm.SetOrderEndBlockers(crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName)
+	app.mm.SetOrderEndBlockers(
+		crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName,
+		upgradetypes.ModuleName, capabilitytypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
+		evidencetypes.ModuleName, stakingtypes.ModuleName, ibchost.ModuleName,
+		feegrant.ModuleName, marketplacemoduletypes.ModuleName, onfttypes.ModuleName, ibctransfertypes.ModuleName, authtypes.ModuleName,
+		vestingtypes.ModuleName, genutiltypes.ModuleName,
+		paramstypes.ModuleName, banktypes.ModuleName,
+	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
 	// properly initialized with tokens from genesis accounts.
@@ -434,6 +446,10 @@ func New(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
+		feegrant.ModuleName,
+		paramstypes.ModuleName,
+		vestingtypes.ModuleName,
+		upgradetypes.ModuleName,
 		onfttypes.ModuleName,
 		marketplacemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis

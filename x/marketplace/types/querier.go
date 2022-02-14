@@ -3,6 +3,7 @@ package types
 import sdk "github.com/cosmos/cosmos-sdk/types"
 
 const (
+	QueryParams          = "params"
 	QueryListing         = "listing"
 	QueryAllListings     = "listings"
 	QueryListingsByOwner = "listings-by-owner"

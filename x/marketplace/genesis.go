@@ -20,6 +20,7 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 		k.SetWithPriceDenom(ctx, l.Price.GetDenom(), l.GetId())
 	}
 	k.SetListingCount(ctx, genState.ListingCount)
+	k.SetParams(ctx, genState.Params)
 
 	// check if the module account exists
 	moduleAcc := k.GetMarketplaceAccount(ctx)
@@ -29,9 +30,15 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 }
 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	return types.NewGenesisState(k.GetAllListings(ctx), k.GetListingCount(ctx))
+	return types.NewGenesisState(k.GetAllListings(ctx), k.GetListingCount(ctx), k.GetParams(ctx))
 }
 
 func DefaultGenesisState() *types.GenesisState {
-	return types.NewGenesisState([]types.Listing{}, 0)
+	return types.NewGenesisState([]types.Listing{}, 0, types.Params{
+		SaleCommission: sdk.NewDecWithPrec(1, 2), // "0.01" or 1%
+		Distribution: types.Distribution{
+			Staking: sdk.NewDecWithPrec(50, 2), // "0.50" or 50%
+			CommunityPool: sdk.NewDecWithPrec(50, 2), // "0.50" or 50%
+		},
+	})
 }

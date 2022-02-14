@@ -2,10 +2,11 @@ package types
 
 import sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-func NewGenesisState(listings []Listing, listingCount uint64) *GenesisState {
+func NewGenesisState(listings []Listing, listingCount uint64, params Params) *GenesisState {
 	return &GenesisState{
 		Listings:     listings,
 		ListingCount: listingCount,
+		Params: params,
 	}
 }
 

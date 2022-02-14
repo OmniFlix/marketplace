@@ -11,13 +11,14 @@ var (
 	_ exported.ListingI = &Listing{}
 )
 
-func NewListing(id, nftId, denomId string, price sdk.Coin, owner sdk.AccAddress) Listing {
+func NewListing(id, nftId, denomId string, price sdk.Coin, owner sdk.AccAddress, splitShares []WeightedAddress) Listing {
 	return Listing{
-		Id:      id,
-		NftId:   nftId,
-		DenomId: denomId,
-		Price:   price,
-		Owner:   owner.String(),
+		Id:          id,
+		NftId:       nftId,
+		DenomId:     denomId,
+		Price:       price,
+		Owner:       owner.String(),
+		SplitShares: splitShares,
 	}
 }
 
@@ -40,4 +41,8 @@ func (l Listing) GetPrice() sdk.Coin {
 func (l Listing) GetOwner() sdk.AccAddress {
 	owner, _ := sdk.AccAddressFromBech32(l.Owner)
 	return owner
+}
+
+func (l Listing) GetSplitShares() interface{} {
+	return l.SplitShares
 }

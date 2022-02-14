@@ -2,12 +2,12 @@ package keeper
 
 import (
 	"fmt"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
-	"github.com/tendermint/tendermint/libs/log"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 )
@@ -16,9 +16,11 @@ type Keeper struct {
 	storeKey sdk.StoreKey
 	cdc      codec.BinaryCodec
 
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
-	nftKeeper     types.NftKeeper
+	accountKeeper      types.AccountKeeper
+	bankKeeper         types.BankKeeper
+	nftKeeper          types.NftKeeper
+	distributionKeeper types.DistributionKeeper
+	paramSpace         paramstypes.Subspace
 }
 
 func NewKeeper(
@@ -28,18 +30,27 @@ func NewKeeper(
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	nftKeeper types.NftKeeper,
+	distrKeeper types.DistributionKeeper,
+	paramSpace paramstypes.Subspace,
 ) Keeper {
 	// ensure marketplace module account is set
 	if addr := accountKeeper.GetModuleAddress(types.ModuleName); addr == nil {
 		panic(fmt.Sprintf("%s module account has not been set", types.ModuleName))
 	}
 
+	// set KeyTable if it has not already been set
+	if !paramSpace.HasKeyTable() {
+		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
+	}
+
 	return Keeper{
-		storeKey:      key,
-		cdc:           cdc,
-		accountKeeper: accountKeeper,
-		bankKeeper:    bankKeeper,
-		nftKeeper:     nftKeeper,
+		storeKey:           key,
+		cdc:                cdc,
+		accountKeeper:      accountKeeper,
+		bankKeeper:         bankKeeper,
+		nftKeeper:          nftKeeper,
+		distributionKeeper: distrKeeper,
+		paramSpace:         paramSpace,
 	}
 }
 
@@ -91,8 +102,18 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 	if err != nil {
 		return err
 	}
+	denom, err := k.nftKeeper.GetDenom(ctx, listing.DenomId)
+	if err != nil {
+		return err
+	}
+	listingPriceCoin := listing.Price
+	listingSaleAmountCoin := listingPriceCoin
+	nft, err := k.nftKeeper.GetONFT(ctx, listing.DenomId, listing.NftId)
+	if err != nil {
+		return err
+	}
 
-	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, buyer, types.ModuleName, sdk.NewCoins(listing.Price))
+	err = k.bankKeeper.SendCoinsFromAccountToModule(ctx, buyer, types.ModuleName, sdk.NewCoins(listingPriceCoin))
 	if err != nil {
 		return err
 	}
@@ -102,10 +123,102 @@ func (k Keeper) Buy(ctx sdk.Context, listing types.Listing, buyer sdk.AccAddress
 		_ = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, buyer, sdk.NewCoins(listing.Price))
 		return err
 	}
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(listing.Price))
+	saleCommission := k.GetSaleCommission(ctx)
+	marketplaceCoin := k.GetProportions(listing.Price, saleCommission)
+	if marketplaceCoin.Amount.GTE(sdk.OneInt()) {
+		err = k.DistributeCommission(ctx, marketplaceCoin)
+		if err != nil {
+			return err
+		}
+		listingSaleAmountCoin = listingPriceCoin.Sub(marketplaceCoin)
+	}
+	if nft.GetRoyaltyShare().GT(sdk.ZeroDec()) {
+		nftRoyaltyShareCoin := k.GetProportions(listingSaleAmountCoin, nft.GetRoyaltyShare())
+		creator, err := sdk.AccAddressFromBech32(denom.Creator)
+		if err != nil {
+			return err
+		}
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, creator, sdk.NewCoins(nftRoyaltyShareCoin))
+		if err != nil {
+			return err
+		}
+		k.createRoyaltyShareTransferEvent(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), creator, nftRoyaltyShareCoin)
+		listingSaleAmountCoin = listingSaleAmountCoin.Sub(nftRoyaltyShareCoin)
+	}
+	remaining := listingSaleAmountCoin
+
+	if len(listing.SplitShares) > 0 {
+		for _, share := range listing.SplitShares {
+			sharePortionCoin := k.GetProportions(listingSaleAmountCoin, share.Weight)
+			sharePortionCoins := sdk.NewCoins(sharePortionCoin)
+			if share.Address == "" {
+				err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sharePortionCoins)
+				if err != nil {
+					return err
+				}
+			} else {
+				saleSplitAddr, err := sdk.AccAddressFromBech32(share.Address)
+				if err != nil {
+					return err
+				}
+				err = k.bankKeeper.SendCoinsFromModuleToAccount(
+					ctx, types.ModuleName, saleSplitAddr, sharePortionCoins)
+				if err != nil {
+					return err
+				}
+				k.createSplitShareTransferEvent(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), saleSplitAddr, sharePortionCoin)
+			}
+			remaining = remaining.Sub(sharePortionCoin)
+		}
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(remaining))
+		if err != nil {
+			return err
+		}
+	} else {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(remaining))
+		if err != nil {
+			return err
+		}
+	}
+
+	k.DeleteListing(ctx, listing)
+	return nil
+}
+
+func (k Keeper) GetProportions(totalCoin sdk.Coin, ratio sdk.Dec) sdk.Coin {
+	return sdk.NewCoin(totalCoin.Denom, totalCoin.Amount.ToDec().Mul(ratio).TruncateInt())
+}
+
+func (k Keeper) DistributeCommission(ctx sdk.Context, marketplaceCoin sdk.Coin) error {
+	distrParams := k.GetMarketplaceDistributionParams(ctx)
+	stakingCommissionCoin := k.GetProportions(marketplaceCoin, distrParams.Staking)
+	if distrParams.Staking.GT(sdk.ZeroDec()) && stakingCommissionCoin.Amount.GT(sdk.ZeroInt()) {
+		err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, authtypes.FeeCollectorName, sdk.NewCoins(stakingCommissionCoin))
+		if err != nil {
+			return err
+		}
+		k.createSaleCommissionTransferEvent(ctx,
+			k.accountKeeper.GetModuleAddress(types.ModuleName),
+			k.accountKeeper.GetModuleAddress(authtypes.FeeCollectorName),
+			stakingCommissionCoin,
+		)
+		marketplaceCoin = marketplaceCoin.Sub(stakingCommissionCoin)
+	}
+	communityPoolCommissionCoin := marketplaceCoin
+
+	err := k.distributionKeeper.FundCommunityPool(
+		ctx,
+		sdk.NewCoins(communityPoolCommissionCoin),
+		k.accountKeeper.GetModuleAddress(types.ModuleName),
+	)
 	if err != nil {
 		return err
 	}
-	k.DeleteListing(ctx, listing)
+	k.createSaleCommissionTransferEvent(ctx,
+		k.accountKeeper.GetModuleAddress(types.ModuleName),
+		k.accountKeeper.GetModuleAddress("distribution"),
+		communityPoolCommissionCoin,
+	)
+
 	return nil
 }

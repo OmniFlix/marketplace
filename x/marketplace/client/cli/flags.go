@@ -5,11 +5,12 @@ import (
 )
 
 const (
-	FlagDenomId    = "denom-id"
-	FlagNftId      = "nft-id"
-	FlagPrice      = "price"
-	FlagOwner      = "owner"
-	FlagPriceDenom = "price-denom"
+	FlagDenomId     = "denom-id"
+	FlagNftId       = "nft-id"
+	FlagPrice       = "price"
+	FlagOwner       = "owner"
+	FlagPriceDenom  = "price-denom"
+	FlagSplitShares = "split-shares"
 )
 
 var (
@@ -22,6 +23,7 @@ func init() {
 	FsListNft.String(FlagDenomId, "", "nft denom id")
 	FsListNft.String(FlagNftId, "", "nft id")
 	FsListNft.String(FlagPrice, "", "listing price of nft")
+	FsListNft.String(FlagSplitShares, "", "split shares for listing")
 
 	FsEditListing.String(FlagPrice, "", "listing price of nft")
 

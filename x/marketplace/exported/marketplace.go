@@ -8,4 +8,5 @@ type ListingI interface {
 	GetNftId() string
 	GetPrice() sdk.Coin
 	GetOwner() sdk.AccAddress
+	GetSplitShares() interface{}
 }

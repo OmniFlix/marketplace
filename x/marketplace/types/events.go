@@ -1,15 +1,20 @@
 package types
 
 const (
-	EventTypeListNFT       = "list_nft"
-	EventTypeEditListing   = "edit_listing"
-	EventTypeDeListNFT     = "de_list_nft"
-	EventTypeBuyNFT        = "buy_nft"
-	AttributeValueCategory = ModuleName
+	EventTypeListNFT                = "list_nft"
+	EventTypeEditListing            = "edit_listing"
+	EventTypeDeListNFT              = "de_list_nft"
+	EventTypeBuyNFT                 = "buy_nft"
+	EventTypeRoyaltyShareTransfer   = "royalty_share_transfer"
+	EventTypeSplitShareTransfer     = "split_share_transfer"
+	EventTypeSaleCommissionTransfer = "sale_commission_transfer"
 
-	AttributeKeyListingId = "listing_id"
-	AttributeKeyCreator   = "creator"
-	AttributeKeyBuyer     = "buyer"
-	AttributeKeyOwner     = "owner"
-	AttributeKeyRecipient = "recipient"
+	AttributeValueCategory = ModuleName
+	AttributeKeyListingId  = "listing-id"
+	AttributeKeyDenomId    = "denom-id"
+	AttributeKeyNftId      = "nft-id"
+	AttributeKeyBuyer      = "buyer"
+	AttributeKeyOwner      = "owner"
+	AttributeKeyRecipient  = "recipient"
+	AttributeKeyAmount     = "amount"
 )

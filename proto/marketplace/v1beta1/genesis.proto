@@ -3,6 +3,7 @@ package OmniFlix.marketplace.v1beta1;
 
 import "gogoproto/gogo.proto";
 import "marketplace/v1beta1/listing.proto";
+import "marketplace/v1beta1/params.proto";
 
 option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
 
@@ -10,4 +11,5 @@ message GenesisState {
   // NFTs that are listed in marketplace
   repeated Listing listings     = 1 [(gogoproto.nullable) = false];
   uint64           ListingCount = 2;
+  Params           params       = 3 [(gogoproto.nullable) = false];
 }

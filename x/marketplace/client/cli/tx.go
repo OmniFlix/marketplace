@@ -70,8 +70,19 @@ func GetCmdListNft() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to parse price: %s", price)
 			}
+			splitSharesStr, err := cmd.Flags().GetString(FlagSplitShares)
+			if err != nil {
+				return err
+			}
+			var splitShares []types.WeightedAddress
+			if len(splitSharesStr) > 0 {
+				splitShares, err = parseSplitShares(splitSharesStr)
+				if err != nil {
+					return err
+				}
+			}
 
-			msg := types.NewMsgListNFT(denomId, nftId, price, owner)
+			msg := types.NewMsgListNFT(denomId, nftId, price, owner, splitShares)
 
 			if err := msg.ValidateBasic(); err != nil {
 				return err
@@ -221,4 +232,26 @@ func GetCmdBuyNft() *cobra.Command {
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
+}
+
+func parseSplitShares(splitsharesStr string) ([]types.WeightedAddress, error) {
+	splitsharesStr = strings.TrimSpace(splitsharesStr)
+	splitsStrList := strings.Split(splitsharesStr, ",")
+	var weightedAddrsList []types.WeightedAddress
+	for _, splitStr := range splitsStrList {
+		var share types.WeightedAddress
+		split := strings.Split(strings.TrimSpace(splitStr), ":")
+		address, err := sdk.AccAddressFromBech32(strings.TrimSpace(split[0]))
+		if err != nil {
+			return nil, err
+		}
+		weight, err := sdk.NewDecFromStr(strings.TrimSpace(split[1]))
+		if err != nil {
+			return nil, err
+		}
+		share.Address = address.String()
+		share.Weight = weight
+		weightedAddrsList = append(weightedAddrsList, share)
+	}
+	return weightedAddrsList, nil
 }
