@@ -75,8 +75,22 @@ edit-listing - Edit active listing on marketplace
     ```
    Example:
     ```shell
-    marketplaced tx marketplace list-nft --nft-id=<nft-id> --denom-id=<denom-id> --price=<price> --from=<key-name> --chain-id=<chain-id> --fees=<fee>
+    marketplaced tx marketplace list-nft 
+      --nft-id="nft_id"
+      --denom-id="denom_id"
+      --price="10000000uflix"
+      --from=test-key
+      --chain-id="chain_id"
+      --fees="200uflix"
     ```
+   For splitting sale amount between multiple accounts use `split-shares`
+   ```shell
+   --split-shares="address:percentage,address:percentage"
+   ```
+   Example:
+   ```shell
+  --split-shares "omniflix1e49p22vz8w5nyer77gl0nhs2puumu3jdel822w:0.70,omniflix1muyp5qvz7e6qd8wkpxex0h963um962qcd777ez:0.30"
+   ```
 
 - Buy NFT
 
