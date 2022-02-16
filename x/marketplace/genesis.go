@@ -34,11 +34,5 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 }
 
 func DefaultGenesisState() *types.GenesisState {
-	return types.NewGenesisState([]types.Listing{}, 0, types.Params{
-		SaleCommission: sdk.NewDecWithPrec(1, 2), // "0.01" or 1%
-		Distribution: types.Distribution{
-			Staking: sdk.NewDecWithPrec(50, 2), // "0.50" or 50%
-			CommunityPool: sdk.NewDecWithPrec(50, 2), // "0.50" or 50%
-		},
-	})
+	return types.NewGenesisState([]types.Listing{}, 0, types.DefaultParams())
 }

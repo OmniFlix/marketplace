@@ -23,7 +23,11 @@ func ParamKeyTable() paramtypes.KeyTable {
 // DefaultParams returns default marketplace parameters
 func DefaultParams() Params {
 	return Params{
-		SaleCommission: sdk.NewDecWithPrec(1, 2), // 2%
+		SaleCommission: sdk.NewDecWithPrec(1, 2), // 1%
+		Distribution: Distribution{
+			Staking:       sdk.NewDecWithPrec(50, 2), // 50%
+			CommunityPool: sdk.NewDecWithPrec(50, 2), // 50%
+		},
 	}
 }
 
@@ -37,10 +41,11 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 
 // ValidateBasic performs basic validation on marketplace parameters.
 func (p Params) ValidateBasic() error {
-	if p.SaleCommission.IsNegative() || p.SaleCommission.GT(sdk.OneDec()) {
-		return fmt.Errorf(
-			"sale commission should be non-negative and less than one: %s", p.SaleCommission,
-		)
+	if err := validateSaleCommission(p.SaleCommission); err != nil {
+		return err
+	}
+	if err := validateMarketplaceDistributionParams(p.Distribution); err != nil {
+		return err
 	}
 	return nil
 }

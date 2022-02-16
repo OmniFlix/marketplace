@@ -6,7 +6,7 @@ func NewGenesisState(listings []Listing, listingCount uint64, params Params) *Ge
 	return &GenesisState{
 		Listings:     listings,
 		ListingCount: listingCount,
-		Params: params,
+		Params:       params,
 	}
 }
 
@@ -15,12 +15,7 @@ func (m *GenesisState) ValidateGenesis() error {
 		if l.GetOwner().Empty() {
 			return sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "missing nft owner")
 		}
-
-		if err := ValidateId(l.GetId()); err != nil {
-			return err
-		}
-
-		if err := ValidatePrice(l.Price); err != nil {
+		if err := ValidateListing(l); err != nil {
 			return err
 		}
 	}

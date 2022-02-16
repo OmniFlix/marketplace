@@ -45,17 +45,6 @@ func init() {
 	amino.Seal()
 }
 
-func MustMarshalSupply(cdc codec.BinaryCodec, supply uint64) []byte {
-	supplyWrap := gogotypes.UInt64Value{Value: supply}
-	return cdc.MustMarshal(&supplyWrap)
-}
-
-func MustUnMarshalSupply(cdc codec.BinaryCodec, value []byte) uint64 {
-	var supplyWrap gogotypes.UInt64Value
-	cdc.MustUnmarshal(value, &supplyWrap)
-	return supplyWrap.Value
-}
-
 func MustMarshalListingID(cdc codec.BinaryCodec, listingId string) []byte {
 	listingIdWrap := gogotypes.StringValue{Value: listingId}
 	return cdc.MustMarshal(&listingIdWrap)
