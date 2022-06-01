@@ -34,6 +34,27 @@ service Query {
   rpc ListingByNftId(QueryListingByNFTIDRequest) returns (QueryListingResponse) {
     option (google.api.http).get = "/omniflix/marketplace/v1beta1/listing-by-nft/{nft_id}";
   }
+
+  // auction queries
+  rpc Auctions(QueryAuctionsRequest) returns (QueryAuctionsResponse) {
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/auctions";
+  }
+
+  rpc Auction(QueryAuctionRequest) returns (QueryAuctionResponse) {
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/auctions/{id}";
+  }
+
+  rpc AuctionsByOwner(QueryAuctionsByOwnerRequest) returns (QueryAuctionsByOwnerResponse) {
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/auctions-by-owner/{owner}";
+  }
+
+  rpc AuctionsByPriceDenom(QueryAuctionsByPriceDenomRequest) returns (QueryAuctionsByPriceDenomResponse) {
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/auctions-by-price-denom/{price_denom}";
+  }
+
+  rpc AuctionByNftId(QueryAuctionByNFTIDRequest) returns (QueryAuctionResponse) {
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/auction-by-nft/{nft_id}";
+  }
 }
 
 

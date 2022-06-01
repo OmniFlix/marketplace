@@ -9,12 +9,16 @@ option (gogoproto.goproto_getters_all) = false;
 
 
 message Params {
-  string       sale_commission = 1 [
+  string                   sale_commission              = 1 [
     (gogoproto.moretags)   = "yaml:\"sale_commission\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
-  Distribution distribution    = 2 [(gogoproto.nullable) = false];
+  Distribution             distribution                 = 2 [(gogoproto.nullable) = false];
+  google.protobuf.Duration bid_close_duration   = 3 [
+    (gogoproto.moretags)   = "yaml:\"bid_close_duration\"",
+    (gogoproto.stdduration) = true
+  ];
 }
 
 message Distribution {
