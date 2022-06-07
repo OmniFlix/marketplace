@@ -2,6 +2,7 @@ syntax = "proto3";
 package OmniFlix.marketplace.v1beta1;
 
 import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
 
 option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
 option (gogoproto.goproto_getters_all) = false;

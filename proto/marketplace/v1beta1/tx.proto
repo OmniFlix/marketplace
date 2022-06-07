@@ -3,7 +3,9 @@ package OmniFlix.marketplace.v1beta1;
 
 import "cosmos/base/v1beta1/coin.proto";
 import "marketplace/v1beta1/listing.proto";
+import "marketplace/v1beta1/auction.proto";
 import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
 
 option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
 option (gogoproto.goproto_getters_all) = false;
@@ -97,7 +99,7 @@ message MsgCreateAuction {
 }
 
 message MsgCreateAuctionResponse {
-  AuctionListing listing = 1;
+  AuctionListing auction = 1;
 }
 
 message MsgCancelAuction {
@@ -111,7 +113,7 @@ message MsgPlaceBid {
   string                   auction_id = 1 [(gogoproto.moretags) = "yaml:\"auction_id\""];
   cosmos.base.v1beta1.Coin amount     = 2 [
     (gogoproto.nullable)     = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
   string                   bidder     = 3;
 }
