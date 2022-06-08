@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"time"
 )
 
 const (
@@ -12,6 +13,9 @@ const (
 	TypeMsgEditListing = "edit_listing"
 	TypeMsgDeListNFT   = "de_list_nft"
 	TypeMsgBuyNFT      = "buy_nft"
+	TypeMsgCreateAuction = "create_auction"
+	TypeMsgCancelAuction = "cancel_auction"
+	TypeMsgPlaceBid = "place_bid"
 
 	// DoNotModify used to indicate that some field should not be updated
 	DoNotModify = "[do-not-modify]"
@@ -23,6 +27,9 @@ var (
 	_ sdk.Msg = &MsgEditListing{}
 	_ sdk.Msg = &MsgDeListNFT{}
 	_ sdk.Msg = &MsgBuyNFT{}
+	_ sdk.Msg = &MsgCreateAuction{}
+	_ sdk.Msg = &MsgCancelAuction{}
+	_ sdk.Msg = &MsgPlaceBid{}
 )
 
 func NewMsgListNFT(denomId, nftId string, price sdk.Coin, owner sdk.AccAddress, splitShares []WeightedAddress) *MsgListNFT {
@@ -186,6 +193,115 @@ func (msg MsgBuyNFT) GetSignBytes() []byte {
 // GetSigners Implements Msg.
 func (msg MsgBuyNFT) GetSigners() []sdk.AccAddress {
 	from, err := sdk.AccAddressFromBech32(msg.Buyer)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
+}
+
+// Auction messages
+
+func NewMsgCreateAuction(denomId, nftId string, duration *time.Duration, startPrice sdk.Coin, owner sdk.AccAddress,
+	incrementPercentage sdk.Dec, whitelistAccounts []string, splitShares []WeightedAddress) *MsgCreateAuction {
+	return &MsgCreateAuction{
+		NftId:       nftId,
+		DenomId:     denomId,
+		Duration: duration,
+		StartPrice:       startPrice,
+		Owner:       owner.String(),
+		IncrementPercentage: incrementPercentage,
+		WhitelistAccounts: whitelistAccounts,
+		SplitShares: splitShares,
+	}
+}
+
+func (msg MsgCreateAuction) Route() string { return MsgRoute }
+
+func (msg MsgCreateAuction) Type() string { return TypeMsgCreateAuction }
+
+func (msg MsgCreateAuction) ValidateBasic() error {
+	return nil
+}
+
+// GetSignBytes Implements Msg.
+func (msg MsgCreateAuction) GetSignBytes() []byte {
+	b, err := ModuleCdc.MarshalJSON(&msg)
+	if err != nil {
+		panic(err)
+	}
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners Implements Msg.
+func (msg MsgCreateAuction) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(msg.Owner)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
+}
+
+func NewMsgCancelAuction(auctionId uint64, owner sdk.AccAddress) *MsgCancelAuction {
+	return &MsgCancelAuction{
+		AuctionId: auctionId,
+		Owner:       owner.String(),
+	}
+}
+
+func (msg MsgCancelAuction) Route() string { return MsgRoute }
+
+func (msg MsgCancelAuction) Type() string { return TypeMsgCancelAuction }
+
+func (msg MsgCancelAuction) ValidateBasic() error {
+	return nil
+}
+
+// GetSignBytes Implements Msg.
+func (msg MsgCancelAuction) GetSignBytes() []byte {
+	b, err := ModuleCdc.MarshalJSON(&msg)
+	if err != nil {
+		panic(err)
+	}
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners Implements Msg.
+func (msg MsgCancelAuction) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(msg.Owner)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{from}
+}
+
+func NewMsgPlaceBid(auctionId uint64, amount sdk.Coin, bidder sdk.AccAddress) *MsgPlaceBid {
+	return &MsgPlaceBid{
+		AuctionId: auctionId,
+		Amount: amount,
+		Bidder:       bidder.String(),
+	}
+}
+
+func (msg MsgPlaceBid) Route() string { return MsgRoute }
+
+func (msg MsgPlaceBid) Type() string { return TypeMsgPlaceBid }
+
+func (msg MsgPlaceBid) ValidateBasic() error {
+	return nil
+}
+
+// GetSignBytes Implements Msg.
+func (msg MsgPlaceBid) GetSignBytes() []byte {
+	b, err := ModuleCdc.MarshalJSON(&msg)
+	if err != nil {
+		panic(err)
+	}
+	return sdk.MustSortJSON(b)
+}
+
+// GetSigners Implements Msg.
+func (msg MsgPlaceBid) GetSigners() []sdk.AccAddress {
+	from, err := sdk.AccAddressFromBech32(msg.Bidder)
 	if err != nil {
 		panic(err)
 	}
