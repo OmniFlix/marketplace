@@ -15,9 +15,14 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgEditListing{}, "OmniFlix/marketplace/MsgEditListing", nil)
 	cdc.RegisterConcrete(&MsgDeListNFT{}, "OmniFlix/marketplace/MsgDeListNFT", nil)
 	cdc.RegisterConcrete(&MsgBuyNFT{}, "OmniFlix/marketplace/MsgBuyNFT", nil)
+	cdc.RegisterConcrete(&MsgCreateAuction{}, "OmniFlix/marketplace/MsgCreateAuction", nil)
+	cdc.RegisterConcrete(&MsgCancelAuction{}, "OmniFlix/marketplace/MsgCancelAuction", nil)
+	cdc.RegisterConcrete(&MsgPlaceBid{}, "OmniFlix/marketplace/MsgPlaceBid", nil)
 
 	cdc.RegisterInterface((*exported.ListingI)(nil), nil)
 	cdc.RegisterConcrete(&Listing{}, "OmniFlix/marketplace/Listing", nil)
+	cdc.RegisterInterface((*exported.AuctionListingI)(nil), nil)
+	cdc.RegisterConcrete(&AuctionListing{}, "OmniFlix/marketplace/AuctionListing", nil)
 }
 
 func RegisterInterfaces(registry types.InterfaceRegistry) {
@@ -26,10 +31,16 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&MsgEditListing{},
 		&MsgDeListNFT{},
 		&MsgBuyNFT{},
+		&MsgCreateAuction{},
+		&MsgCancelAuction{},
+		&MsgPlaceBid{},
 	)
 
 	registry.RegisterImplementations((*exported.ListingI)(nil),
 		&Listing{},
+	)
+	registry.RegisterImplementations((*exported.AuctionListingI)(nil),
+		&AuctionListing{},
 	)
 }
 

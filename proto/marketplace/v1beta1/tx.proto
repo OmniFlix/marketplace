@@ -76,10 +76,10 @@ message MsgBuyNFTResponse {}
 message MsgCreateAuction {
   string                   nft_id               = 1;
   string                   denom_id             = 2;
-  cosmos.base.v1beta1.Coin min_price            = 3 [
+  cosmos.base.v1beta1.Coin start_price          = 3 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin",
-    (gogoproto.moretags)     = "yaml:\"min_price\""
+    (gogoproto.moretags)     = "yaml:\"start_price\""
   ];
   google.protobuf.Duration duration             = 4 [(gogoproto.stdduration) = true];
   string                   increment_percentage = 5 [
@@ -103,14 +103,14 @@ message MsgCreateAuctionResponse {
 }
 
 message MsgCancelAuction {
-  string auction_id = 1 [(gogoproto.moretags) = "yaml:\"auction_id\""];
+  uint64 auction_id = 1 [(gogoproto.moretags) = "yaml:\"auction_id\""];
   string owner      = 2;
 }
 
 message MsgCancelAuctionResponse {}
 
 message MsgPlaceBid {
-  string                   auction_id = 1 [(gogoproto.moretags) = "yaml:\"auction_id\""];
+  uint64                   auction_id = 1 [(gogoproto.moretags) = "yaml:\"auction_id\""];
   cosmos.base.v1beta1.Coin amount     = 2 [
     (gogoproto.nullable)     = false,
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coin"

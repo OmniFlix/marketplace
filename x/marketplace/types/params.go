@@ -2,15 +2,22 @@ package types
 
 import (
 	"fmt"
+	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+)
+
+// Default period for closing bids for an auction
+const (
+	DefaultBidClosePeriod time.Duration = time.Hour * 12 // 12 hours
 )
 
 // Parameter keys
 var (
 	ParamStoreKeySaleCommission = []byte("SaleCommission")
 	ParamStoreKeyDistribution   = []byte("MarketplaceDistribution")
+	ParamStoreKeyBidCloseDuration = []byte("BidCloseDuration")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -20,15 +27,24 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
+func NewMarketplaceParams( saleCommission sdk.Dec, distribution Distribution, bidCloseDuration time.Duration) Params {
+	return Params{
+		SaleCommission: saleCommission,
+		Distribution: distribution,
+		BidCloseDuration: &bidCloseDuration,
+	}
+}
+
 // DefaultParams returns default marketplace parameters
 func DefaultParams() Params {
-	return Params{
-		SaleCommission: sdk.NewDecWithPrec(1, 2), // 1%
-		Distribution: Distribution{
+	return NewMarketplaceParams(
+		sdk.NewDecWithPrec(1, 2), // 1%
+		Distribution{
 			Staking:       sdk.NewDecWithPrec(50, 2), // 50%
 			CommunityPool: sdk.NewDecWithPrec(50, 2), // 50%
 		},
-	}
+		DefaultBidClosePeriod,
+	)
 }
 
 // ParamSetPairs returns the parameter set pairs.
@@ -36,6 +52,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 	return paramtypes.ParamSetPairs{
 		paramtypes.NewParamSetPair(ParamStoreKeySaleCommission, &p.SaleCommission, validateSaleCommission),
 		paramtypes.NewParamSetPair(ParamStoreKeyDistribution, &p.Distribution, validateMarketplaceDistributionParams),
+		paramtypes.NewParamSetPair(ParamStoreKeyBidCloseDuration, &p.BidCloseDuration, validateBidCloseDuration),
 	}
 }
 
@@ -45,6 +62,9 @@ func (p Params) ValidateBasic() error {
 		return err
 	}
 	if err := validateMarketplaceDistributionParams(p.Distribution); err != nil {
+		return err
+	}
+	if err := validateBidCloseDuration(p.BidCloseDuration); err != nil {
 		return err
 	}
 	return nil
@@ -122,5 +142,18 @@ func validateMarketplaceDistributionParams(i interface{}) error {
 	if !v.Staking.Add(v.CommunityPool).Equal(sdk.OneDec()) {
 		return fmt.Errorf("marketplace distribtution commission params sum must be equal to : %d", 1)
 	}
+	return nil
+}
+
+func validateBidCloseDuration(i interface{}) error {
+	v, ok := i.(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if v.Seconds() <= 0 {
+		return fmt.Errorf("bid close duration must be positive: %f", v.Seconds())
+	}
+
 	return nil
 }

@@ -20,4 +20,7 @@ var (
 	ErrNftNonTransferable   = sdkerrors.Register(ModuleName, 13, "non-transferable nft")
 	ErrListingDoesNotExists = sdkerrors.Register(ModuleName, 14, "listing doesn't exists")
 	ErrInvalidSplits        = sdkerrors.Register(ModuleName, 15, "invalid split shares")
+	ErrNonPositiveNumber   = sdkerrors.Register(ModuleName, 16, "non positive number")
+	ErrInvalidAuctionId     = sdkerrors.Register(ModuleName, 17, "invalid auction id")
+	ErrInvalidWhitelistAccounts        = sdkerrors.Register(ModuleName, 18, "invalid whitelist accounts")
 )

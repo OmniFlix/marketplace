@@ -2,11 +2,15 @@ package types
 
 import sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-func NewGenesisState(listings []Listing, listingCount uint64, params Params) *GenesisState {
+func NewGenesisState(listings []Listing, listingCount uint64, params Params,
+	auctions []AuctionListing, bids []Bid, nextAuctionNumber uint64) *GenesisState {
 	return &GenesisState{
-		Listings:     listings,
-		ListingCount: listingCount,
-		Params:       params,
+		Listings:          listings,
+		ListingCount:      listingCount,
+		Params:            params,
+		Auctions:          auctions,
+		Bids:              bids,
+		NextAuctionNumber: nextAuctionNumber,
 	}
 }
 
@@ -18,6 +22,20 @@ func (m *GenesisState) ValidateGenesis() error {
 		if err := ValidateListing(l); err != nil {
 			return err
 		}
+	}
+	if m.ListingCount < 0 {
+		return sdkerrors.Wrap(ErrNonPositiveNumber, "must be a positive number")
+	}
+	if err := m.Params.ValidateBasic(); err != nil {
+		return err
+	}
+	for _, auction :=  range m.Auctions {
+		if err := ValidateAuctionListing(auction); err != nil {
+			return err
+		}
+	}
+	if m.NextAuctionNumber <= 0 {
+		return sdkerrors.Wrap(ErrNonPositiveNumber, "must be a number and greater than 0.")
 	}
 	return nil
 }
