@@ -9,6 +9,10 @@ const (
 	EventTypeSplitShareTransfer     = "split_share_transfer"
 	EventTypeSaleCommissionTransfer = "sale_commission_transfer"
 
+	EventTypeCreateAuction                = "create_auction"
+	EcentTypeCancelAuction                = "cancel_auction"
+	EventTypePlaceBid                     = "place_bid"
+
 	AttributeValueCategory = ModuleName
 	AttributeKeyListingId  = "listing-id"
 	AttributeKeyDenomId    = "denom-id"
@@ -17,4 +21,6 @@ const (
 	AttributeKeyOwner      = "owner"
 	AttributeKeyRecipient  = "recipient"
 	AttributeKeyAmount     = "amount"
+	AttributeKeyAuctionId  = "auction-id"
+	AttributeKeyStartPrice  = "start-price"
 )

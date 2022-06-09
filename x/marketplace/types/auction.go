@@ -8,21 +8,22 @@ import (
 )
 
 var (
-	_ proto.Message     = &AuctionListing{}
+	_ proto.Message            = &AuctionListing{}
 	_ exported.AuctionListingI = &AuctionListing{}
 )
 
-func NewAuctionListing(id uint64, nftId, denomId string, start_time *time.Time, start_price sdk.Coin, increment_percentage sdk.Dec,
+func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime time.Time, startPrice sdk.Coin, incrementPercentage sdk.Dec,
 	owner sdk.AccAddress, splitShares []WeightedAddress) AuctionListing {
 	return AuctionListing{
-		Id: id,
-		NftId:       nftId,
-		DenomId:     denomId,
-		StartTime: start_time,
-		StartPrice:  start_price,
-		IncrementPercentage: increment_percentage,
-		Owner:       owner.String(),
-		SplitShares: splitShares,
+		Id:                  id,
+		NftId:               nftId,
+		DenomId:             denomId,
+		StartTime:           &startTime,
+		EndTime:             &endTime,
+		StartPrice:          startPrice,
+		IncrementPercentage: incrementPercentage,
+		Owner:               owner.String(),
+		SplitShares:         splitShares,
 	}
 }
 

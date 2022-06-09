@@ -264,3 +264,8 @@ func (k Keeper) CancelAuctionListing(ctx sdk.Context, auction types.AuctionListi
 	k.UnsetAuctionListingWithNFTID(ctx, auction.GetNftId())
 	k.UnsetAuctionListingWithPriceDenom(ctx, auction.StartPrice.Denom, auction.GetId())
 }
+
+func (k Keeper) PlaceBid(ctx sdk.Context, bid types.Bid) error {
+	// TODO: Place Bid
+	return nil
+}

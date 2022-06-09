@@ -139,3 +139,41 @@ func (m msgServer) BuyNFT(goCtx context.Context, msg *types.MsgBuyNFT) (*types.M
 
 	return &types.MsgBuyNFTResponse{}, nil
 }
+
+// CreateAuction
+func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuction, ) (*types.MsgCreateAuctionResponse, error) {
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	owner, err := sdk.AccAddressFromBech32(msg.Owner)
+	if err != nil {
+		return nil, err
+	}
+
+	nft, err := m.nftKeeper.GetONFT(ctx, msg.DenomId, msg.NftId)
+	if err != nil {
+		return nil, sdkerrors.Wrapf(types.ErrNftNotExists,
+			"invalid nft and or denomId, nftId %s, denomId %s", msg.NftId, msg.DenomId)
+	}
+	if owner.String() != nft.GetOwner().String() {
+		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "unauthorized address %s", owner)
+	}
+	if !nft.IsTransferable() {
+		return nil, sdkerrors.Wrapf(
+			types.ErrNftNonTransferable, "non-transferable nfts not allowed to list in marketplace")
+	}
+    auctionNumber := m.Keeper.GetNextAuctionNumber(ctx)
+	auction := types.NewAuctionListing(auctionNumber, msg.NftId, msg.DenomId,
+		*msg.StartTime, msg.StartTime.Add(*msg.Duration), msg.StartPrice,
+		msg.IncrementPercentage, owner, msg.SplitShares)
+	err = m.Keeper.CreateAuctionListing(ctx, auction)
+	if err != nil {
+		return nil, err
+	}
+
+	m.Keeper.createAuctionEvent(ctx, auction)
+
+	return &types.MsgCreateAuctionResponse{
+		Auction: &auction,
+	}, nil
+}
