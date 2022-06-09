@@ -222,3 +222,45 @@ func (k Keeper) DistributeCommission(ctx sdk.Context, marketplaceCoin sdk.Coin) 
 
 	return nil
 }
+
+// CreateAuctionListing creates a auction in the store and set owner to auction and updates the next auction number
+func (k Keeper) CreateAuctionListing(ctx sdk.Context, auction types.AuctionListing) error {
+	// check auction already exists or not
+	if k.HasAuctionListing(ctx, auction.GetId()) {
+		return sdkerrors.Wrapf(types.ErrListingAlreadyExists, "auction listing already exists: %s", auction.GetId())
+	}
+
+	err := k.nftKeeper.TransferOwnership(ctx,
+		auction.GetDenomId(), auction.GetNftId(), auction.GetOwner(),
+		k.accountKeeper.GetModuleAddress(types.ModuleName))
+
+	if err != nil {
+		return err
+	}
+	// set auction listing
+	k.SetAuctionListing(ctx, auction)
+	//TODO: update auction status
+
+	if len(auction.GetOwner()) != 0 {
+		// set auction listing id with owner prefix
+		k.SetAuctionListingWithOwner(ctx, auction.GetOwner(), auction.GetId())
+	}
+	// Update auction listing next number
+	auctionId := k.GetNextAuctionNumber(ctx)
+	k.SetNextAuctionNumber(ctx, auctionId+1)
+	k.SetAuctionListingWithNFTID(ctx, auction.NftId, auction.Id)
+
+	if len(auction.StartPrice.Denom) > 0 {
+		k.SetAuctionListingWithPriceDenom(ctx, auction.StartPrice.Denom, auction.Id)
+	}
+	return nil
+}
+
+func (k Keeper) CancelAuctionListing(ctx sdk.Context, auction types.AuctionListing) {
+	// TODO check bids for this auction
+
+	k.RemoveAuctionListing(ctx, auction.GetId())
+	k.UnsetAuctionListingWithOwner(ctx, auction.GetOwner(), auction.GetId())
+	k.UnsetAuctionListingWithNFTID(ctx, auction.GetNftId())
+	k.UnsetAuctionListingWithPriceDenom(ctx, auction.StartPrice.Denom, auction.GetId())
+}

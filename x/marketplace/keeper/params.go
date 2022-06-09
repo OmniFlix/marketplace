@@ -1,8 +1,11 @@
 package keeper
 
 import (
+	"time"
+
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 )
 
 // GetParams gets the parameters for the marketplace module.
@@ -26,4 +29,10 @@ func (k Keeper) GetSaleCommission(ctx sdk.Context) (percent sdk.Dec) {
 func (k Keeper) GetMarketplaceDistributionParams(ctx sdk.Context) (distParams types.Distribution) {
 	k.paramSpace.Get(ctx, types.ParamStoreKeyDistribution, &distParams)
 	return distParams
+}
+
+// GetBidCloseDuration returns the closing duration for bid for auctions.
+func (k Keeper) GetBidCloseDuration(ctx sdk.Context) (duration time.Duration) {
+	k.paramSpace.Get(ctx, types.ParamStoreKeyBidCloseDuration, &duration)
+	return duration
 }

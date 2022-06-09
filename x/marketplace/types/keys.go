@@ -23,6 +23,8 @@ var (
 	PrefixAuctionNFTID      = []byte{0x08}
 	PrefixAuctionPriceDenom = []byte{0x09}
 	PrefixNextAuctionNumber = []byte{0x10}
+	PrefixBidByAuctionId    = []byte{0x11}
+	PrefixBidByBidder       = []byte{0x12}
 )
 
 func KeyListingIdPrefix(id string) []byte {
@@ -41,18 +43,21 @@ func KeyListingPriceDenomPrefix(priceDenom, id string) []byte {
 	return append(append(PrefixListingPriceDenom, []byte(priceDenom)...), []byte(id)...)
 }
 
-func KeyAuctionIdPrefix(id string) []byte {
-	return append(PrefixAuctionId, []byte(id)...)
+func KeyAuctionIdPrefix(id uint64) []byte {
+	return append(PrefixAuctionId, sdk.Uint64ToBigEndian(id)...)
 }
 
-func KeyAuctionOwnerPrefix(owner sdk.AccAddress, id string) []byte {
-	return append(append(PrefixAuctionOwner, owner.Bytes()...), []byte(id)...)
+func KeyAuctionOwnerPrefix(owner sdk.AccAddress, id uint64) []byte {
+	return append(append(PrefixAuctionOwner, owner.Bytes()...), sdk.Uint64ToBigEndian(id)...)
 }
 
 func KeyAuctionNFTIDPrefix(nftId string) []byte {
 	return append(PrefixAuctionNFTID, []byte(nftId)...)
 }
 
-func KeyAuctionPriceDenomPrefix(priceDenom, id string) []byte {
-	return append(append(PrefixAuctionPriceDenom, []byte(priceDenom)...), []byte(id)...)
+func KeyAuctionPriceDenomPrefix(priceDenom string, id uint64) []byte {
+	return append(append(PrefixAuctionPriceDenom, []byte(priceDenom)...), sdk.Uint64ToBigEndian(id)...)
+}
+func KeyBidPrefix(id uint64) []byte {
+	return append(PrefixBidByAuctionId, sdk.Uint64ToBigEndian(id)...)
 }
