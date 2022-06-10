@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"golang.org/x/exp/slices"
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -162,7 +163,7 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 		return nil, sdkerrors.Wrapf(
 			types.ErrNftNonTransferable, "non-transferable nfts not allowed to list in marketplace")
 	}
-    auctionNumber := m.Keeper.GetNextAuctionNumber(ctx)
+	auctionNumber := m.Keeper.GetNextAuctionNumber(ctx)
 	auction := types.NewAuctionListing(auctionNumber, msg.NftId, msg.DenomId,
 		*msg.StartTime, msg.StartTime.Add(*msg.Duration), msg.StartPrice,
 		msg.IncrementPercentage, owner, msg.SplitShares)
@@ -176,4 +177,72 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	return &types.MsgCreateAuctionResponse{
 		Auction: &auction,
 	}, nil
+}
+
+// CancelAuction
+func (m msgServer) CancelAuction(goCtx context.Context, msg *types.MsgCancelAuction, ) (*types.MsgCancelAuctionResponse, error) {
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	owner, err := sdk.AccAddressFromBech32(msg.Owner)
+	if err != nil {
+		return nil, err
+	}
+
+	auction, found := m.Keeper.GetAuctionListing(ctx, msg.AuctionId)
+	if !found {
+		return nil, sdkerrors.Wrapf(types.ErrAuctionDoesNotExists, "auction id %d not exists", msg.AuctionId)
+	}
+	if owner.String() != auction.Owner {
+		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "unauthorized address %s", owner.String())
+	}
+
+	if auction.Status == types.AUCTION_STATUS_ENDED {
+		return nil, sdkerrors.Wrapf(types.ErrEndedAuction, "cannot cancel auction %d, ", auction.Id)
+	}
+
+	err = m.Keeper.CancelAuctionListing(ctx, auction)
+	if err != nil {
+		return nil, err
+	}
+
+	m.Keeper.cancelAuctionEvent(ctx, auction)
+
+	return &types.MsgCancelAuctionResponse{}, nil
+}
+
+// PlaceBid
+func (m msgServer) PlaceBid(goCtx context.Context, msg *types.MsgPlaceBid, ) (*types.MsgPlaceBidResponse, error) {
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	bidder, err := sdk.AccAddressFromBech32(msg.Bidder)
+	if err != nil {
+		return nil, err
+	}
+
+	auction, found := m.Keeper.GetAuctionListing(ctx, msg.AuctionId)
+	if !found {
+		return nil, sdkerrors.Wrapf(types.ErrAuctionDoesNotExists, "auction id %d not exists", msg.AuctionId)
+	}
+	if auction.Status != types.AUCTION_STATUS_ACTIVE {
+		return nil, sdkerrors.Wrapf(types.ErrInActiveAuction, "cannot place a bid for inactive/ended auction %d, ", auction.Id)
+	}
+	if len(auction.WhitelistAccounts) > 0 && !slices.Contains(auction.WhitelistAccounts, bidder.String()) {
+		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "cannot place a bid for this auction %d, only whitelisted accounts allowed to bid", auction.Id)
+	}
+	if msg.Amount.GetDenom() != auction.StartPrice.GetDenom() {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidPriceDenom, "given auction only accepts bids in %s, ", auction.StartPrice.GetDenom())
+	}
+
+	bid := types.NewBid(auction.Id, msg.Amount, bidder)
+
+	err = m.Keeper.PlaceBid(ctx, auction, bid)
+	if err != nil {
+		return nil, err
+	}
+
+	m.Keeper.placeBidEvent(ctx, auction, bid)
+
+	return &types.MsgPlaceBidResponse{}, nil
 }

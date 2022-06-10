@@ -8,7 +8,7 @@ import "marketplace/v1beta1/listing.proto";
 
 option go_package = "github.com/OmniFlix/marketplace/x/marketplace/types";
 option (gogoproto.goproto_getters_all) = false;
-
+option (gogoproto.goproto_enum_prefix_all) = false;
 
 message AuctionListing {
   uint64                    id                   = 1;

@@ -24,6 +24,7 @@ func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime time
 		IncrementPercentage: incrementPercentage,
 		Owner:               owner.String(),
 		SplitShares:         splitShares,
+		Status:              AUCTION_STATUS_INACTIVE,
 	}
 }
 
@@ -57,4 +58,8 @@ func (al AuctionListing) GetOwner() sdk.AccAddress {
 
 func (al AuctionListing) GetSplitShares() interface{} {
 	return al.SplitShares
+}
+
+func (al AuctionListing) GetStatus() string {
+	return  al.Status.String()
 }

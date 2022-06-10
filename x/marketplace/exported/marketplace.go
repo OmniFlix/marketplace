@@ -23,4 +23,11 @@ type AuctionListingI interface {
 	GetIncrementPercentage() sdk.Dec
 	GetOwner() sdk.AccAddress
 	GetSplitShares() interface{}
+	GetStatus() string
+}
+
+type BidI interface {
+	GetAuctionId() uint64
+	GetAmount() sdk.Coin
+	GetBidder() sdk.AccAddress
 }

@@ -10,7 +10,7 @@ const (
 	EventTypeSaleCommissionTransfer = "sale_commission_transfer"
 
 	EventTypeCreateAuction                = "create_auction"
-	EcentTypeCancelAuction                = "cancel_auction"
+	EventTypeCancelAuction                = "cancel_auction"
 	EventTypePlaceBid                     = "place_bid"
 
 	AttributeValueCategory = ModuleName
@@ -23,4 +23,5 @@ const (
 	AttributeKeyAmount     = "amount"
 	AttributeKeyAuctionId  = "auction-id"
 	AttributeKeyStartPrice  = "start-price"
+	AttributeKeyBidder      = "bidder"
 )

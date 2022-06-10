@@ -22,6 +22,18 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 	k.SetListingCount(ctx, genState.ListingCount)
 	k.SetParams(ctx, genState.Params)
 
+	for _, al := range genState.Auctions {
+		k.SetAuctionListing(ctx, al)
+		k.SetAuctionListingWithOwner(ctx, al.GetOwner(), al.GetId())
+		k.SetAuctionListingWithNFTID(ctx, al.GetNftId(), al.GetId())
+		k.SetAuctionListingWithPriceDenom(ctx, al.StartPrice.GetDenom(), al.GetId())
+	}
+
+	for _, b := range genState.Bids {
+		k.SetBid(ctx, b)
+	}
+	k.SetNextAuctionNumber(ctx, genState.NextAuctionNumber)
+
 	// check if the module account exists
 	moduleAcc := k.GetMarketplaceAccount(ctx)
 	if moduleAcc == nil {
@@ -30,9 +42,16 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 }
 
 func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
-	return types.NewGenesisState(k.GetAllListings(ctx), k.GetListingCount(ctx), k.GetParams(ctx))
+	return types.NewGenesisState(
+		k.GetAllListings(ctx),
+		k.GetListingCount(ctx),
+		k.GetParams(ctx),
+		k.GetAllAuctionListings(ctx),
+		k.GetAllBids(ctx),
+		k.GetNextAuctionNumber(ctx),
+	)
 }
 
 func DefaultGenesisState() *types.GenesisState {
-	return types.NewGenesisState([]types.Listing{}, 0, types.DefaultParams())
+	return types.NewGenesisState([]types.Listing{}, 0, types.DefaultParams(), []types.AuctionListing{}, []types.Bid{}, 1)
 }

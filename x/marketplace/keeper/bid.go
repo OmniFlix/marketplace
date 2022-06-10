@@ -8,10 +8,10 @@ import (
 )
 
 // SetBid set a specific bid for an auction listing in the store
-func (k Keeper) SetBid(ctx sdk.Context, bid types.Bid, auctionId uint64) {
+func (k Keeper) SetBid(ctx sdk.Context, bid types.Bid) {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixBidByAuctionId)
 	bz := k.cdc.MustMarshal(&bid)
-	store.Set(types.KeyBidPrefix(auctionId), bz)
+	store.Set(types.KeyBidPrefix(bid.AuctionId), bz)
 }
 
 // GetBid returns a bid of an auction listing by its id

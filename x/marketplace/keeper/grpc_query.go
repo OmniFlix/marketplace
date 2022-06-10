@@ -188,3 +188,31 @@ func (k Keeper) ListingByNftId(
 	}
 	return nil, status.Errorf(codes.NotFound, "listing not found with given nft id")
 }
+
+func (k Keeper) Auctions(goCtx context.Context, req *types.QueryAuctionsRequest) (*types.QueryAuctionsResponse, error) {
+	// TODO: query all auctions
+
+	return &types.QueryAuctionsResponse{}, nil
+}
+
+func (k Keeper) Auction(goCtx context.Context, req *types.QueryAuctionRequest) (*types.QueryAuctionResponse, error) {
+	// TODO: query auction by it's id
+
+	return &types.QueryAuctionResponse{}, nil
+}
+
+func (k Keeper) AuctionsByOwner(goCtx context.Context, req *types.QueryAuctionsByOwnerRequest) (*types.QueryAuctionsResponse, error) {
+	// TODO: query auctions by owner
+
+	return &types.QueryAuctionsResponse{}, nil
+}
+func (k Keeper) AuctionsByPriceDenom(goCtx context.Context, req *types.QueryAuctionsByPriceDenomRequest) (*types.QueryAuctionsResponse, error) {
+	// TODO: query auctions by priceDenom
+
+	return &types.QueryAuctionsResponse{}, nil
+}
+func (k Keeper) AuctionByNftId(goCtx context.Context, req *types.QueryAuctionByNFTIDRequest) (*types.QueryAuctionResponse, error) {
+	// TODO: query auction by nft id
+
+	return &types.QueryAuctionResponse{}, nil
+}

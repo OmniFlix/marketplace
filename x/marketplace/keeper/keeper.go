@@ -239,7 +239,6 @@ func (k Keeper) CreateAuctionListing(ctx sdk.Context, auction types.AuctionListi
 	}
 	// set auction listing
 	k.SetAuctionListing(ctx, auction)
-	//TODO: update auction status
 
 	if len(auction.GetOwner()) != 0 {
 		// set auction listing id with owner prefix
@@ -256,16 +255,54 @@ func (k Keeper) CreateAuctionListing(ctx sdk.Context, auction types.AuctionListi
 	return nil
 }
 
-func (k Keeper) CancelAuctionListing(ctx sdk.Context, auction types.AuctionListing) {
-	// TODO check bids for this auction
+func (k Keeper) CancelAuctionListing(ctx sdk.Context, auction types.AuctionListing) error {
+    // Check bid Exists or Not
+	if k.HasBid(ctx, auction.Id) {
+		return sdkerrors.Wrapf(types.ErrBidExists, "cannot cancel auction %s, bid exists ", auction.Id)
+	}
 
+	// Transfer Back NFT ownership to auction owner
+	err := k.nftKeeper.TransferOwnership(ctx, auction.GetDenomId(), auction.GetNftId(),
+		k.accountKeeper.GetModuleAddress(types.ModuleName), auction.GetOwner())
+	if err != nil {
+		return  err
+	}
 	k.RemoveAuctionListing(ctx, auction.GetId())
 	k.UnsetAuctionListingWithOwner(ctx, auction.GetOwner(), auction.GetId())
 	k.UnsetAuctionListingWithNFTID(ctx, auction.GetNftId())
 	k.UnsetAuctionListingWithPriceDenom(ctx, auction.StartPrice.Denom, auction.GetId())
+
+	return nil
 }
 
-func (k Keeper) PlaceBid(ctx sdk.Context, bid types.Bid) error {
-	// TODO: Place Bid
+func (k Keeper) PlaceBid(ctx sdk.Context, auction types.AuctionListing, newBid types.Bid) error {
+	// Check bids of auction
+	newBidPrice := auction.StartPrice
+	prevBid, bidExists := k.GetBid(ctx, auction.Id)
+	if bidExists {
+		newBidPrice = k.GetNewBidPrice(auction.StartPrice.Denom, prevBid.Amount, auction.IncrementPercentage)
+	}
+	if newBid.Amount.IsLT(newBidPrice) {
+		return sdkerrors.Wrapf(types.ErrBidAmountNotEnough,
+			"cannot place bid for given auction %d, required amount to bid is %s", auction.Id, newBidPrice.String())
+	}
+
+	// Transfer amount from bidder to module account
+	err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, newBid.GetBidder(), types.ModuleName, sdk.NewCoins(newBid.Amount))
+	if err != nil {
+		return err
+	}
+	// Release previous Bid
+	if bidExists {
+		_ = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, prevBid.GetBidder(), sdk.NewCoins(prevBid.Amount))
+		k.RemoveBid(ctx, prevBid.AuctionId)
+	}
+	// Set new bid
+	k.SetBid(ctx, newBid)
+
 	return nil
+}
+
+func (k Keeper) GetNewBidPrice(denom string, amount sdk.Coin, increment sdk.Dec) sdk.Coin {
+	return sdk.NewCoin(denom, amount.Amount.Add(amount.Amount.ToDec().Mul(increment).TruncateInt()))
 }
