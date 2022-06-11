@@ -146,7 +146,7 @@ func validateMarketplaceDistributionParams(i interface{}) error {
 }
 
 func validateBidCloseDuration(i interface{}) error {
-	v, ok := i.(time.Duration)
+	v, ok := i.(*time.Duration)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
