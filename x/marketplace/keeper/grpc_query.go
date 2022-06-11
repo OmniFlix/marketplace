@@ -343,3 +343,41 @@ func (k Keeper) AuctionByNftId(goCtx context.Context, req *types.QueryAuctionByN
 	}
 	return nil, status.Errorf(codes.NotFound, "auction not found with given nft id")
 }
+
+func (k Keeper) Bid(goCtx context.Context, req *types.QueryBidRequest) (*types.QueryBidResponse, error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	bid, found := k.GetBid(ctx, req.Id)
+	if !found {
+		return nil, status.Errorf(codes.NotFound, "bid not found for auction %d", req.Id)
+	}
+	return &types.QueryBidResponse{Bid: &bid}, nil
+}
+
+func (k Keeper) Bids(goCtx context.Context, req *types.QueryBidsRequest) (*types.QueryBidsResponse, error) {
+	if req == nil {
+		return nil, status.Errorf(codes.InvalidArgument, "empty request")
+	}
+
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	var bids []types.Bid
+	var pageRes *query.PageResponse
+	store := ctx.KVStore(k.storeKey)
+
+	// TODO: filter bids by bidder address
+
+	bidStore := prefix.NewStore(store, types.PrefixBidByAuctionId)
+	pageRes, err := query.Paginate(bidStore, req.Pagination, func(key []byte, value []byte) error {
+		var bid types.Bid
+		k.cdc.MustUnmarshal(value, &bid)
+		bids = append(bids, bid)
+		return nil
+	})
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
+	}
+	return &types.QueryBidsResponse{Bids: bids, Pagination: pageRes}, nil
+}

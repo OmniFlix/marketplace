@@ -30,7 +30,10 @@ func NewQuerier(k Keeper, legacyQuerierCdc *codec.LegacyAmino) sdk.Querier {
 			return queryAllAuctions(ctx, req, k, legacyQuerierCdc)
 		case types.QueryAuctionsByOwner:
 			return queryAuctionsByOwner(ctx, req, k, legacyQuerierCdc)
-		// TODO: bid queries
+		case types.QueryBid:
+			return queryBid(ctx, req, k, legacyQuerierCdc)
+		case types.QueryAllBids:
+			return queryAllBids(ctx, req, k, legacyQuerierCdc)
 		default:
 			return nil, sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "unknown query path: %s", path[0])
 		}
@@ -128,4 +131,32 @@ func queryAuctionsByOwner(ctx sdk.Context, req abci.RequestQuery, k Keeper, lega
 
 	auctions := k.GetAuctionListingsByOwner(ctx, params.Owner)
 	return codec.MarshalJSONIndent(legacyQuerierCdc, auctions)
+}
+
+func queryBid(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
+	var params types.QueryBidParams
+
+	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+
+	bid, found := k.GetBid(ctx, params.Id)
+	if !found {
+		return nil, sdkerrors.Wrap(types.ErrBidDoesNotExists, fmt.Sprintf("auction %d does not have any bid", params.Id))
+	}
+	return codec.MarshalJSONIndent(legacyQuerierCdc, bid)
+}
+
+func queryAllBids(ctx sdk.Context, req abci.RequestQuery, k Keeper, legacyQuerierCdc *codec.LegacyAmino) ([]byte, error) {
+	var params types.QueryAllBidsParams
+
+	err := legacyQuerierCdc.UnmarshalJSON(req.Data, &params)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrJSONUnmarshal, err.Error())
+	}
+
+	bids := k.GetAllBids(ctx)
+
+	return codec.MarshalJSONIndent(legacyQuerierCdc, bids)
 }

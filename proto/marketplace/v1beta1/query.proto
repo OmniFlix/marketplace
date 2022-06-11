@@ -56,6 +56,14 @@ service Query {
   rpc AuctionByNftId(QueryAuctionByNFTIDRequest) returns (QueryAuctionResponse) {
     option (google.api.http).get = "/omniflix/marketplace/v1beta1/auction-by-nft/{nft_id}";
   }
+
+  rpc Bids(QueryBidsRequest) returns (QueryBidsResponse) {
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/bids";
+  }
+
+  rpc Bid(QueryBidRequest) returns (QueryBidResponse) {
+    option (google.api.http).get = "/omniflix/marketplace/v1beta1/bids/{id}";
+  }
 }
 
 
@@ -118,7 +126,7 @@ message QueryAuctionsRequest {
 }
 
 message QueryAuctionsResponse {
-  repeated AuctionListing                       auctions   = 1 [(gogoproto.nullable) = false];
+  repeated AuctionListing                auctions   = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
@@ -142,4 +150,23 @@ message QueryAuctionByNFTIDRequest {
 message QueryAuctionsByPriceDenomRequest {
   string                                price_denom = 1 [(gogoproto.moretags) = "yaml:\"price_denom\""];
   cosmos.base.query.v1beta1.PageRequest pagination  = 2;
+}
+
+message QueryBidsRequest {
+  string                                bidder     = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+message QueryBidsResponse {
+  repeated Bid                           bids       = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+
+}
+
+message QueryBidRequest {
+  uint64 id = 1;
+}
+
+message QueryBidResponse {
+  Bid bid = 1;
 }

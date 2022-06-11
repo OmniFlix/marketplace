@@ -28,4 +28,5 @@ var (
 	ErrEndedAuction             = sdkerrors.Register(ModuleName, 21, "auction ended")
 	ErrInActiveAuction          = sdkerrors.Register(ModuleName, 22, "inactive auction")
 	ErrBidAmountNotEnough       = sdkerrors.Register(ModuleName, 23, "amount is not enough to bid")
+	ErrBidDoesNotExists         = sdkerrors.Register(ModuleName, 24, "bid does not exists")
 )
