@@ -8,7 +8,7 @@ const (
 	QueryAllListings     = "listings"
 	QueryListingsByOwner = "listings-by-owner"
 	QueryAuction         = "auction"
-	QueryAllAuction      = "auctions"
+	QueryAllAuctions      = "auctions"
 	QueryBid             = "bid"
 	QueryAuctionsByOwner = "auctions-by-owner"
 )
@@ -48,11 +48,11 @@ func NewQueryListingsByOwnerParams(owner sdk.AccAddress) QueryListingsByOwnerPar
 
 // QueryAuctionParams is the query parameters for '/marketplace/auctions/{id}'
 type QueryAuctionParams struct {
-	Id string
+	Id uint64
 }
 
 // NewQueryAuctionParams
-func NewQueryAuctionParams(id string) QueryAuctionParams {
+func NewQueryAuctionParams(id uint64) QueryAuctionParams {
 	return QueryAuctionParams{
 		Id: id,
 	}

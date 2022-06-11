@@ -201,13 +201,14 @@ func (msg MsgBuyNFT) GetSigners() []sdk.AccAddress {
 
 // Auction messages
 
-func NewMsgCreateAuction(denomId, nftId string, duration *time.Duration, startPrice sdk.Coin, owner sdk.AccAddress,
+func NewMsgCreateAuction(denomId, nftId string, startTime time.Time, duration time.Duration, startPrice sdk.Coin, owner sdk.AccAddress,
 	incrementPercentage sdk.Dec, whitelistAccounts []string, splitShares []WeightedAddress) *MsgCreateAuction {
 	return &MsgCreateAuction{
 		NftId:       nftId,
 		DenomId:     denomId,
-		Duration: duration,
-		StartPrice:       startPrice,
+		Duration: &duration,
+		StartTime: &startTime,
+		StartPrice:   startPrice,
 		Owner:       owner.String(),
 		IncrementPercentage: incrementPercentage,
 		WhitelistAccounts: whitelistAccounts,
@@ -220,6 +221,7 @@ func (msg MsgCreateAuction) Route() string { return MsgRoute }
 func (msg MsgCreateAuction) Type() string { return TypeMsgCreateAuction }
 
 func (msg MsgCreateAuction) ValidateBasic() error {
+	// TODO: validate create auction message
 	return nil
 }
 
@@ -253,6 +255,7 @@ func (msg MsgCancelAuction) Route() string { return MsgRoute }
 func (msg MsgCancelAuction) Type() string { return TypeMsgCancelAuction }
 
 func (msg MsgCancelAuction) ValidateBasic() error {
+	// TODO: validate cancel auction message
 	return nil
 }
 
@@ -287,6 +290,7 @@ func (msg MsgPlaceBid) Route() string { return MsgRoute }
 func (msg MsgPlaceBid) Type() string { return TypeMsgPlaceBid }
 
 func (msg MsgPlaceBid) ValidateBasic() error {
+	// TODO: validate place bid msg
 	return nil
 }
 
