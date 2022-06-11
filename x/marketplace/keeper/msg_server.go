@@ -62,7 +62,7 @@ func (m msgServer) EditListing(goCtx context.Context,
 
 	listing, found := m.Keeper.GetListing(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrapf(types.ErrListingDoesNotExists, "listing id %s not exists", listing.Id)
+		return nil, sdkerrors.Wrapf(types.ErrListingDoesNotExists, "listing id %s not exists", msg.Id)
 	}
 	if owner.String() != listing.Owner {
 		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "unauthorized address %s", owner)
@@ -88,7 +88,7 @@ func (m msgServer) DeListNFT(goCtx context.Context,
 	}
 	listing, found := m.Keeper.GetListing(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrapf(types.ErrListingDoesNotExists, "listing id %s not exists", listing.Id)
+		return nil, sdkerrors.Wrapf(types.ErrListingDoesNotExists, "listing id %s not exists", msg.Id)
 	}
 	if owner.String() != listing.Owner {
 		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "unauthorized address %s", owner)
@@ -115,7 +115,7 @@ func (m msgServer) BuyNFT(goCtx context.Context, msg *types.MsgBuyNFT) (*types.M
 
 	listing, found := m.Keeper.GetListing(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrapf(types.ErrListingDoesNotExists, "listing id %s not exists", listing.Id)
+		return nil, sdkerrors.Wrapf(types.ErrListingDoesNotExists, "listing id %s not exists", msg.Id)
 	}
 	if err := types.ValidatePrice(msg.Price); err != nil {
 		return nil, err
