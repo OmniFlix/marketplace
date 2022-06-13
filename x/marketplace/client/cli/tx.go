@@ -8,6 +8,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/spf13/cobra"
 	"strings"
+	"time"
 
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -27,6 +28,7 @@ func GetTxCmd() *cobra.Command {
 		GetCmdEditListing(),
 		GetCmdDeListNft(),
 		GetCmdBuyNft(),
+		GetCmdCreateAuction(),
 	)
 
 	return marketplaceTxCmd
@@ -254,4 +256,118 @@ func parseSplitShares(splitsharesStr string) ([]types.WeightedAddress, error) {
 		weightedAddrsList = append(weightedAddrsList, share)
 	}
 	return weightedAddrsList, nil
+}
+
+func parseWhitelistAccounts(whitelistStr string) ([]string, error) {
+	whitelistStr = strings.TrimSpace(whitelistStr)
+	whitelist := strings.Split(whitelistStr, ",")
+	return whitelist, nil
+}
+
+// GetCmdCreateAuction implements the create-auction command
+func GetCmdCreateAuction() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "create-auction",
+		Long: "creates an auction on marketplace",
+		Example: fmt.Sprintf(
+			"$ %s tx marketplace create-auction "+
+				"--nft-id=<nft-id> "+
+				"--denom-id=<nft-id> "+
+				"--start-price=\"1000000uflix\" "+
+				"--start-time=\"2022-06-13T13:02:49.389Z\" "+
+				"--increment-percentage=\"0.01\""+
+				"--from=<key-name> "+
+				"--chain-id=<chain-id> "+
+				"--fees=<fee>",
+			version.AppName,
+		),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			owner := clientCtx.GetFromAddress()
+			denomId, err := cmd.Flags().GetString(FlagDenomId)
+			if err != nil {
+				return err
+			}
+			nftId, err := cmd.Flags().GetString(FlagNftId)
+			if err != nil {
+				return err
+			}
+			startPriceStr, err := cmd.Flags().GetString(FlagStartPrice)
+			if err != nil {
+				return err
+			}
+			startPrice, err := sdk.ParseCoinNormalized(startPriceStr)
+			if err != nil {
+				return fmt.Errorf("failed to parse start price: %s", startPrice)
+			}
+			startTimeStr, err := cmd.Flags().GetString(FlagStartTime)
+			if err != nil {
+				return err
+			}
+
+			var startTime time.Time
+			if startTimeStr != "" {
+				startTime, err = time.Parse(time.RFC3339, startTimeStr)
+				if err != nil {
+					return err
+				}
+			} else {
+				return fmt.Errorf("failed to parse start time: %s", startTime)
+			}
+			splitSharesStr, err := cmd.Flags().GetString(FlagSplitShares)
+			if err != nil {
+				return err
+			}
+			var splitShares []types.WeightedAddress
+			if len(splitSharesStr) > 0 {
+				splitShares, err = parseSplitShares(splitSharesStr)
+				if err != nil {
+					return err
+				}
+			}
+			duration, err := cmd.Flags().GetDuration(FlagDuration)
+			if err != nil {
+				return err
+			}
+			incrementStr, err := cmd.Flags().GetString(FlagIncrementPercentage)
+			if err != nil {
+				return err
+			}
+			increment, err := sdk.NewDecFromStr(incrementStr)
+			if err != nil {
+				return err
+			}
+			whitelistAccountsStr, err := cmd.Flags().GetString(FlagWhiteListAccounts)
+			if err != nil {
+				return err
+			}
+			var whitelist []string
+			if len(whitelistAccountsStr) > 0 {
+				whitelist, err = parseWhitelistAccounts(whitelistAccountsStr)
+				if err != nil {
+					return err
+				}
+			}
+			msg := types.NewMsgCreateAuction(denomId, nftId, startTime, duration, startPrice, owner, increment, whitelist, splitShares)
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsListNft)
+	_ = cmd.MarkFlagRequired(FlagDenomId)
+	_ = cmd.MarkFlagRequired(FlagNftId)
+	_ = cmd.MarkFlagRequired(FlagStartPrice)
+	_ = cmd.MarkFlagRequired(FlagStartTime)
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
 }

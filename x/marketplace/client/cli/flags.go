@@ -9,8 +9,14 @@ const (
 	FlagNftId       = "nft-id"
 	FlagPrice       = "price"
 	FlagOwner       = "owner"
+	FlagBidder      = "bidder"
 	FlagPriceDenom  = "price-denom"
 	FlagSplitShares = "split-shares"
+	FlagWhiteListAccounts = "whitelist-accounts"
+	FlagStartTime   = "start-time"
+	FlagStartPrice  = "start-price"
+	FlagIncrementPercentage = "increment-percentage"
+	FlagDuration = "duration"
 )
 
 var (
