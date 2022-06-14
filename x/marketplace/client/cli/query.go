@@ -32,6 +32,8 @@ func GetQueryCmd() *cobra.Command {
 		GetCmdQueryAuction(),
 		GetCmdQueryAllAuctions(),
 		GetCmdQueryAuctionsByOwner(),
+		GetCmdQueryAuctionBid(),
+		GetCmdQueryAllBids(),
 	)
 
 	return cmd
@@ -325,6 +327,88 @@ func GetCmdQueryAuctionsByOwner() *cobra.Command {
 	}
 	flags.AddQueryFlagsToCmd(cmd)
 	flags.AddPaginationFlagsToCmd(cmd, "owner auctions")
+
+	return cmd
+}
+
+// GetCmdQueryAuctionBid implements the query bid command.
+func GetCmdQueryAuctionBid() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "bid [id]",
+		Long:    "Query a bid by auction id.",
+		Example: fmt.Sprintf("$ %s query marketplace bid <id>", version.AppName),
+		Args:    cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx, err := client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
+
+			if err != nil {
+				return err
+			}
+
+			auctionId, err := strconv.ParseUint(strings.ToLower(strings.TrimSpace(args[0])), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			res, err := queryClient.Bid(context.Background(), &types.QueryBidRequest{
+				Id: auctionId,
+			})
+
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res.Bid)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdQueryAllBids implements the query all bids command.
+func GetCmdQueryAllBids() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "bids",
+		Long:    "Query bids.",
+		Example: fmt.Sprintf("$ %s query marketplace bids", version.AppName),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx := client.GetClientContextFromCmd(cmd)
+			clientCtx, err := client.ReadPersistentCommandFlags(clientCtx, cmd.Flags())
+
+			if err != nil {
+				return err
+			}
+			bidder, err := cmd.Flags().GetString(FlagBidder)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			pageReq, err := client.ReadPageRequest(cmd.Flags())
+			if err != nil {
+				return err
+			}
+			resp, err := queryClient.Bids(
+				context.Background(),
+				&types.QueryBidsRequest{
+					Bidder:      bidder,
+					Pagination: pageReq,
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(resp)
+		},
+	}
+	flags.AddQueryFlagsToCmd(cmd)
+	cmd.Flags().String(FlagOwner, "", "filter by bidder address")
+	flags.AddPaginationFlagsToCmd(cmd, "all bids")
 
 	return cmd
 }

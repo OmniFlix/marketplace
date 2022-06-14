@@ -7,6 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/spf13/cobra"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,6 +30,8 @@ func GetTxCmd() *cobra.Command {
 		GetCmdDeListNft(),
 		GetCmdBuyNft(),
 		GetCmdCreateAuction(),
+		GetCmdCancelAuction(),
+		GetCmdPlaceBid(),
 	)
 
 	return marketplaceTxCmd
@@ -217,7 +220,7 @@ func GetCmdBuyNft() *cobra.Command {
 			}
 			price, err := sdk.ParseCoinNormalized(priceStr)
 			if err != nil {
-				return fmt.Errorf("failed to parse price: %s", price)
+				return fmt.Errorf("failed to parse price: %s", priceStr)
 			}
 
 			msg := types.NewMsgBuyNFT(listingId, price, buyer)
@@ -231,6 +234,7 @@ func GetCmdBuyNft() *cobra.Command {
 	}
 
 	cmd.Flags().AddFlagSet(FsBuyNFT)
+	_ = cmd.MarkFlagRequired(FlagPrice)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
@@ -362,11 +366,103 @@ func GetCmdCreateAuction() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().AddFlagSet(FsListNft)
+	cmd.Flags().AddFlagSet(FsCreateAuction)
 	_ = cmd.MarkFlagRequired(FlagDenomId)
 	_ = cmd.MarkFlagRequired(FlagNftId)
 	_ = cmd.MarkFlagRequired(FlagStartPrice)
 	_ = cmd.MarkFlagRequired(FlagStartTime)
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+
+// GetCmdCancelAuction implements the cancel-auction command
+func GetCmdCancelAuction() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:  "cancel-auction",
+		Long: "cancel an existing auction from marketplace with no bids",
+		Example: fmt.Sprintf(
+			"$ %s tx marketplace cancel-auction [auction-id] "+
+				"--from=<key-name> "+
+				"--chain-id=<chain-id> "+
+				"--fees=<fee>",
+			version.AppName,
+		),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			owner := clientCtx.GetFromAddress()
+
+			auctionId, err := strconv.ParseUint(strings.TrimSpace(args[0]),10, 64)
+			if err != nil {
+				return err
+			}
+
+			msg := types.NewMsgCancelAuction(auctionId, owner)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+	flags.AddTxFlagsToCmd(cmd)
+
+	return cmd
+}
+
+// GetCmdBid implements the bid command
+func GetCmdPlaceBid() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "place-bid",
+		Short: "Bid for an nft on marketplace",
+		Example: fmt.Sprintf(
+			"$ %s tx marketplace place-bid [auction-id]"+
+				"--amount=<amount>"+
+				"--from=<key-name> "+
+				"--chain-id=<chain-id> "+
+				"--fees=<fee>",
+			version.AppName,
+		),
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			buyer := clientCtx.GetFromAddress()
+			auctionId, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
+
+			amountStr, err := cmd.Flags().GetString(FlagAmount)
+			if err != nil {
+				return err
+			}
+			amount, err := sdk.ParseCoinNormalized(amountStr)
+			if err != nil {
+				return fmt.Errorf("failed to parse price: %s", amountStr)
+			}
+
+			msg := types.NewMsgPlaceBid(auctionId, amount, buyer)
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	cmd.Flags().AddFlagSet(FsPlaceBid)
+	_ = cmd.MarkFlagRequired(FlagAmount)
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd
