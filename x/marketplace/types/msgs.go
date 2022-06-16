@@ -1,9 +1,10 @@
 package types
 
 import (
+	"time"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"time"
 )
 
 const (
@@ -221,7 +222,31 @@ func (msg MsgCreateAuction) Route() string { return MsgRoute }
 func (msg MsgCreateAuction) Type() string { return TypeMsgCreateAuction }
 
 func (msg MsgCreateAuction) ValidateBasic() error {
-	// TODO: validate create auction message
+	_, err := sdk.AccAddressFromBech32(msg.Owner)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid sender address (%s)", err)
+	}
+	if err = ValidatePrice(msg.StartPrice); err != nil {
+		return err
+	}
+	if !msg.IncrementPercentage.IsPositive() || !msg.IncrementPercentage.LTE(sdk.NewDec(1)) {
+		return sdkerrors.Wrapf(ErrInvalidPercentage, "invalid percentage value (%s)", msg.IncrementPercentage.String())
+	}
+	if err = ValidateSplitShares(msg.SplitShares); err != nil {
+		return err
+	}
+	if err = ValidateWhiteListAccounts(msg.WhitelistAccounts); err != nil {
+		return err
+	}
+	return nil
+}
+func (msg MsgCreateAuction ) Validate(now time.Time) error {
+	if err := msg.ValidateBasic(); err != nil {
+		return err
+	}
+	if msg.StartTime.Before(now) {
+		return sdkerrors.Wrapf(ErrInvalidStartTime, "start time must be after current time %s", now.String())
+	}
 	return nil
 }
 
@@ -255,7 +280,10 @@ func (msg MsgCancelAuction) Route() string { return MsgRoute }
 func (msg MsgCancelAuction) Type() string { return TypeMsgCancelAuction }
 
 func (msg MsgCancelAuction) ValidateBasic() error {
-	// TODO: validate cancel auction message
+	_, err := sdk.AccAddressFromBech32(msg.Owner)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid owner address (%s)", err)
+	}
 	return nil
 }
 
@@ -290,7 +318,13 @@ func (msg MsgPlaceBid) Route() string { return MsgRoute }
 func (msg MsgPlaceBid) Type() string { return TypeMsgPlaceBid }
 
 func (msg MsgPlaceBid) ValidateBasic() error {
-	// TODO: validate place bid msg
+	_, err := sdk.AccAddressFromBech32(msg.Bidder)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid bidder address (%s)", err)
+	}
+	if err := ValidatePrice(msg.Amount); err != nil {
+		return err
+	}
 	return nil
 }
 

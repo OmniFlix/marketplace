@@ -89,6 +89,12 @@ func ValidateWhiteListAccounts(whitelistAccounts []string) error {
 	return nil
 }
 
+func validateIncrementPercentage(increment sdk.Dec) error {
+	if !increment.IsPositive() || !increment.LTE(sdk.NewDec(1)) {
+		return sdkerrors.Wrapf(ErrInvalidPercentage, "invalid percentage value (%s)", increment.String())
+	}
+	return nil
+}
 
 func validateAuctionId(id uint64) error {
 	if id <= 0 {
@@ -108,6 +114,9 @@ func ValidateAuctionListing(auction AuctionListing) error {
 		return err
 	}
 	if err := ValidatePrice(auction.StartPrice); err != nil {
+		return err
+	}
+	if err := validateIncrementPercentage(auction.IncrementPercentage); err != nil {
 		return err
 	}
 	if err := ValidateSplitShares(auction.SplitShares); err != nil {

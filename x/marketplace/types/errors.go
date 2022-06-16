@@ -29,4 +29,6 @@ var (
 	ErrInActiveAuction          = sdkerrors.Register(ModuleName, 22, "inactive auction")
 	ErrBidAmountNotEnough       = sdkerrors.Register(ModuleName, 23, "amount is not enough to bid")
 	ErrBidDoesNotExists         = sdkerrors.Register(ModuleName, 24, "bid does not exists")
+	ErrInvalidStartTime         = sdkerrors.Register(ModuleName, 25, "invalid start time")
+	ErrInvalidPercentage        = sdkerrors.Register(ModuleName, 26, "invalid percentage decimal value")
 )

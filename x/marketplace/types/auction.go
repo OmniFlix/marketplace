@@ -13,7 +13,7 @@ var (
 )
 
 func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime *time.Time, startPrice sdk.Coin, incrementPercentage sdk.Dec,
-	owner sdk.AccAddress, splitShares []WeightedAddress) AuctionListing {
+	owner sdk.AccAddress, whitelistAccounts []string, splitShares []WeightedAddress) AuctionListing {
 	return AuctionListing{
 		Id:                  id,
 		NftId:               nftId,
@@ -23,6 +23,7 @@ func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime *tim
 		StartPrice:          startPrice,
 		IncrementPercentage: incrementPercentage,
 		Owner:               owner.String(),
+		WhitelistAccounts:   whitelistAccounts,
 		SplitShares:         splitShares,
 		Status:              AUCTION_STATUS_INACTIVE,
 	}

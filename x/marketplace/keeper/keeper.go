@@ -225,6 +225,7 @@ func (k Keeper) DistributeCommission(ctx sdk.Context, marketplaceCoin sdk.Coin) 
 
 // CreateAuctionListing creates a auction in the store and set owner to auction and updates the next auction number
 func (k Keeper) CreateAuctionListing(ctx sdk.Context, auction types.AuctionListing) error {
+
 	// check auction already exists or not
 	if k.HasAuctionListing(ctx, auction.GetId()) {
 		return sdkerrors.Wrapf(types.ErrListingAlreadyExists, "auction listing already exists: %s", auction.GetId())

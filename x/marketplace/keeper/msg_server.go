@@ -151,6 +151,9 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	if err != nil {
 		return nil, err
 	}
+	if err := msg.Validate(ctx.BlockTime()); err != nil {
+		return nil, err
+	}
 
 	nft, err := m.nftKeeper.GetONFT(ctx, msg.DenomId, msg.NftId)
 	if err != nil {
@@ -171,7 +174,7 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	auctionNumber := m.Keeper.GetNextAuctionNumber(ctx)
 	auction := types.NewAuctionListing(auctionNumber, msg.NftId, msg.DenomId,
 		msg.StartTime, endTime, msg.StartPrice,
-		msg.IncrementPercentage, owner, msg.SplitShares)
+		msg.IncrementPercentage, owner, msg.WhitelistAccounts, msg.SplitShares)
 	err = m.Keeper.CreateAuctionListing(ctx, auction)
 	if err != nil {
 		return nil, err
