@@ -12,14 +12,14 @@ var (
 	_ exported.AuctionListingI = &AuctionListing{}
 )
 
-func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime time.Time, startPrice sdk.Coin, incrementPercentage sdk.Dec,
+func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime *time.Time, startPrice sdk.Coin, incrementPercentage sdk.Dec,
 	owner sdk.AccAddress, splitShares []WeightedAddress) AuctionListing {
 	return AuctionListing{
 		Id:                  id,
 		NftId:               nftId,
 		DenomId:             denomId,
-		StartTime:           &startTime,
-		EndTime:             &endTime,
+		StartTime:           startTime,
+		EndTime:             endTime,
 		StartPrice:          startPrice,
 		IncrementPercentage: incrementPercentage,
 		Owner:               owner.String(),

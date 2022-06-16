@@ -201,12 +201,12 @@ func (msg MsgBuyNFT) GetSigners() []sdk.AccAddress {
 
 // Auction messages
 
-func NewMsgCreateAuction(denomId, nftId string, startTime time.Time, duration time.Duration, startPrice sdk.Coin, owner sdk.AccAddress,
+func NewMsgCreateAuction(denomId, nftId string, startTime time.Time, duration *time.Duration, startPrice sdk.Coin, owner sdk.AccAddress,
 	incrementPercentage sdk.Dec, whitelistAccounts []string, splitShares []WeightedAddress) *MsgCreateAuction {
 	return &MsgCreateAuction{
 		NftId:       nftId,
 		DenomId:     denomId,
-		Duration: &duration,
+		Duration:    duration,
 		StartTime: &startTime,
 		StartPrice:   startPrice,
 		Owner:       owner.String(),

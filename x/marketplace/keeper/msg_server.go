@@ -6,6 +6,7 @@ import (
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"time"
 )
 
 type msgServer struct {
@@ -163,9 +164,13 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 		return nil, sdkerrors.Wrapf(
 			types.ErrNftNonTransferable, "non-transferable nfts not allowed to list in marketplace")
 	}
+	var endTime *time.Time
+	if msg.Duration != nil {
+		*endTime = msg.StartTime.Add(*msg.Duration)
+	}
 	auctionNumber := m.Keeper.GetNextAuctionNumber(ctx)
 	auction := types.NewAuctionListing(auctionNumber, msg.NftId, msg.DenomId,
-		*msg.StartTime, msg.StartTime.Add(*msg.Duration), msg.StartPrice,
+		msg.StartTime, endTime, msg.StartPrice,
 		msg.IncrementPercentage, owner, msg.SplitShares)
 	err = m.Keeper.CreateAuctionListing(ctx, auction)
 	if err != nil {

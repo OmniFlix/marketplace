@@ -333,9 +333,19 @@ func GetCmdCreateAuction() *cobra.Command {
 					return err
 				}
 			}
-			duration, err := cmd.Flags().GetDuration(FlagDuration)
+			durationStr, err := cmd.Flags().GetString(FlagDuration)
 			if err != nil {
 				return err
+			}
+			var duration *time.Duration
+			if len(durationStr) > 0 {
+				dur, err := time.ParseDuration(durationStr)
+				if err != nil {
+					return err
+				}
+				duration = &dur
+			} else {
+				duration = nil
 			}
 			incrementStr, err := cmd.Flags().GetString(FlagIncrementPercentage)
 			if err != nil {
