@@ -13,5 +13,5 @@ func EndBlock(ctx sdk.Context, k keeper.Keeper) []abcitypes.ValidatorUpdate {
 		panic(err)
 	}
 	log.Info("Updated Auctions and Processed bids.. ")
-	return nil
+	return []abcitypes.ValidatorUpdate{}
 }

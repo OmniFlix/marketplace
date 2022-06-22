@@ -228,16 +228,13 @@ func (k Keeper) UpdateAuctionStatusesAndProcessBids(ctx sdk.Context) error {
 				auction.Status = types.AUCTION_STATUS_ENDED
 				k.SetAuctionListing(ctx, auction)
 				// TODO: should we delete Auction record ?
-			} else {
-				if  ctx.BlockTime().Sub(bid.Time).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
-					// TODO: Process bid
-					err := k.processBid(ctx, auction, bid)
-					if err != nil {
-						return err
-					}
-					auction.Status = types.AUCTION_STATUS_ENDED
-					k.SetAuctionListing(ctx, auction)
+			} else if found && ctx.BlockTime().Sub(bid.Time).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
+				err := k.processBid(ctx, auction, bid)
+				if err != nil {
+					return err
 				}
+				auction.Status = types.AUCTION_STATUS_ENDED
+				k.SetAuctionListing(ctx, auction)
 			}
 		}
 	}
@@ -321,7 +318,7 @@ func (k Keeper) processBid(ctx sdk.Context, auction types.AuctionListing, bid ty
 			return err
 		}
 	}
-    auction.Status = types.AUCTION_STATUS_ENDED
+	auction.Status = types.AUCTION_STATUS_ENDED
 	k.SetAuctionListing(ctx, auction)
 	return nil
 }

@@ -282,6 +282,8 @@ func (k Keeper) PlaceBid(ctx sdk.Context, auction types.AuctionListing, newBid t
 	prevBid, bidExists := k.GetBid(ctx, auction.Id)
 	if bidExists {
 		newBidPrice = k.GetNewBidPrice(auction.StartPrice.Denom, prevBid.Amount, auction.IncrementPercentage)
+	} else {
+		newBidPrice = k.GetNewBidPrice(auction.StartPrice.Denom, newBidPrice, auction.IncrementPercentage)
 	}
 	if newBid.Amount.IsLT(newBidPrice) {
 		return sdkerrors.Wrapf(types.ErrBidAmountNotEnough,
