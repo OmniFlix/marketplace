@@ -146,3 +146,182 @@ func (k Keeper) UnsetAuctionListingWithPriceDenom(ctx sdk.Context, priceDenom st
 	store := ctx.KVStore(k.storeKey)
 	store.Delete(types.KeyAuctionPriceDenomPrefix(priceDenom, id))
 }
+
+func (k Keeper) SetInactiveAuction(ctx sdk.Context, auctionId uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&gogotypes.UInt64Value{Value: auctionId})
+
+	store.Set(types.KeyInActiveAuctionPrefix(auctionId), bz)
+}
+
+func (k Keeper) UnsetInactiveAuction(ctx sdk.Context, auctionId uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyInActiveAuctionPrefix(auctionId))
+}
+
+func (k Keeper) SetActiveAuction(ctx sdk.Context, auctionId uint64) {
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&gogotypes.UInt64Value{Value: auctionId})
+
+	store.Set(types.KeyActiveAuctionPrefix(auctionId), bz)
+}
+
+func (k Keeper) UnsetActiveAuction(ctx sdk.Context, auctionId uint64) {
+	store := ctx.KVStore(k.storeKey)
+	store.Delete(types.KeyActiveAuctionPrefix(auctionId))
+}
+
+func (k Keeper) IterateInactiveAuctions(ctx sdk.Context, fn func(index int, item types.AuctionListing) (stop bool)) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixInactiveAuction)
+	iter := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iter.Close()
+
+	for i := 0; iter.Valid(); iter.Next() {
+		var id gogotypes.UInt64Value
+		k.cdc.MustUnmarshal(iter.Value(), &id)
+		var (
+			auction, _ = k.GetAuctionListing(ctx, id.Value)
+		)
+
+		if stop := fn(i, auction); stop {
+			break
+		}
+		i++
+	}
+}
+
+func (k Keeper) IterateActiveAuctions(ctx sdk.Context, fn func(index int, item types.AuctionListing) (stop bool)) {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixActiveAuction)
+	iter := sdk.KVStorePrefixIterator(store, []byte{})
+	defer iter.Close()
+
+	for i := 0; iter.Valid(); iter.Next() {
+		var id gogotypes.UInt64Value
+		k.cdc.MustUnmarshal(iter.Value(), &id)
+		var (
+			auction, _ = k.GetAuctionListing(ctx, id.Value)
+		)
+
+		if stop := fn(i, auction); stop {
+			break
+		}
+		i++
+	}
+}
+
+// UpdateAuctionStatusesAndProcessBids update all auction listings status
+func (k Keeper) UpdateAuctionStatusesAndProcessBids(ctx sdk.Context) error {
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixAuctionId)
+	iterator := sdk.KVStorePrefixIterator(store, []byte{})
+
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var auction types.AuctionListing
+		k.cdc.MustUnmarshal(iterator.Value(), &auction)
+		if auction.Status == types.AUCTION_STATUS_INACTIVE && auction.StartTime.Before(ctx.BlockTime()) {
+			auction.Status = types.AUCTION_STATUS_ACTIVE
+			k.SetAuctionListing(ctx, auction)
+		} else if auction.Status == types.AUCTION_STATUS_ACTIVE {
+			bid, found := k.GetBid(ctx, auction.GetId())
+			if !found && auction.EndTime != nil && auction.EndTime.Before(ctx.BlockTime()) {
+				auction.Status = types.AUCTION_STATUS_ENDED
+				k.SetAuctionListing(ctx, auction)
+				// TODO: should we delete Auction record ?
+			} else {
+				if  ctx.BlockTime().Sub(bid.Time).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
+					// TODO: Process bid
+					err := k.processBid(ctx, auction, bid)
+					if err != nil {
+						return err
+					}
+					auction.Status = types.AUCTION_STATUS_ENDED
+					k.SetAuctionListing(ctx, auction)
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func (k Keeper) processBid(ctx sdk.Context, auction types.AuctionListing, bid types.Bid) error {
+	owner, err := sdk.AccAddressFromBech32(auction.Owner)
+	if err != nil {
+		return err
+	}
+	denom, err := k.nftKeeper.GetDenom(ctx, auction.DenomId)
+	if err != nil {
+		return err
+	}
+	nft, err := k.nftKeeper.GetONFT(ctx, auction.DenomId, auction.NftId)
+	if err != nil {
+		return err
+	}
+	BidAmountCoin := bid.Amount
+	auctionSaleAmountCoin := BidAmountCoin
+	err = k.nftKeeper.TransferOwnership(ctx, auction.GetDenomId(), auction.GetNftId(),
+		k.accountKeeper.GetModuleAddress(types.ModuleName), bid.GetBidder())
+	if err != nil {
+		return err
+	}
+	saleCommission := k.GetSaleCommission(ctx)
+	marketplaceCoin := k.GetProportions(bid.Amount, saleCommission)
+	if marketplaceCoin.Amount.GTE(sdk.OneInt()) {
+		err = k.DistributeCommission(ctx, marketplaceCoin)
+		if err != nil {
+			return err
+		}
+		auctionSaleAmountCoin = BidAmountCoin.Sub(marketplaceCoin)
+	}
+	if nft.GetRoyaltyShare().GT(sdk.ZeroDec()) {
+		nftRoyaltyShareCoin := k.GetProportions(auctionSaleAmountCoin, nft.GetRoyaltyShare())
+		creator, err := sdk.AccAddressFromBech32(denom.Creator)
+		if err != nil {
+			return err
+		}
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, creator, sdk.NewCoins(nftRoyaltyShareCoin))
+		if err != nil {
+			return err
+		}
+		k.createRoyaltyShareTransferEvent(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), creator, nftRoyaltyShareCoin)
+		auctionSaleAmountCoin = auctionSaleAmountCoin.Sub(nftRoyaltyShareCoin)
+	}
+	remaining := auctionSaleAmountCoin
+
+	if len(auction.SplitShares) > 0 {
+		for _, share := range auction.SplitShares {
+			sharePortionCoin := k.GetProportions(auctionSaleAmountCoin, share.Weight)
+			sharePortionCoins := sdk.NewCoins(sharePortionCoin)
+			if share.Address == "" {
+				err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sharePortionCoins)
+				if err != nil {
+					return err
+				}
+			} else {
+				saleSplitAddr, err := sdk.AccAddressFromBech32(share.Address)
+				if err != nil {
+					return err
+				}
+				err = k.bankKeeper.SendCoinsFromModuleToAccount(
+					ctx, types.ModuleName, saleSplitAddr, sharePortionCoins)
+				if err != nil {
+					return err
+				}
+				k.createSplitShareTransferEvent(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), saleSplitAddr, sharePortionCoin)
+			}
+			remaining = remaining.Sub(sharePortionCoin)
+		}
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(remaining))
+		if err != nil {
+			return err
+		}
+	} else {
+		err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, owner, sdk.NewCoins(remaining))
+		if err != nil {
+			return err
+		}
+	}
+    auction.Status = types.AUCTION_STATUS_ENDED
+	k.SetAuctionListing(ctx, auction)
+	return nil
+}

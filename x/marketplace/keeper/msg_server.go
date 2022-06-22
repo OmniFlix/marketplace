@@ -243,7 +243,7 @@ func (m msgServer) PlaceBid(goCtx context.Context, msg *types.MsgPlaceBid, ) (*t
 		return nil, sdkerrors.Wrapf(types.ErrInvalidPriceDenom, "given auction only accepts bids in %s, ", auction.StartPrice.GetDenom())
 	}
 
-	bid := types.NewBid(auction.Id, msg.Amount, bidder)
+	bid := types.NewBid(auction.Id, msg.Amount, ctx.BlockTime(), bidder)
 
 	err = m.Keeper.PlaceBid(ctx, auction, bid)
 	if err != nil {

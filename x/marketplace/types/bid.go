@@ -4,6 +4,7 @@ import (
 	"github.com/OmniFlix/marketplace/x/marketplace/exported"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gogo/protobuf/proto"
+	"time"
 )
 
 var (
@@ -11,10 +12,11 @@ var (
 	_ exported.BidI = &Bid{}
 )
 
-func NewBid(auctionId uint64, amount sdk.Coin, bidder sdk.AccAddress) Bid {
+func NewBid(auctionId uint64, amount sdk.Coin, bidTime time.Time, bidder sdk.AccAddress) Bid {
 	return Bid{
 		AuctionId: auctionId,
 		Amount:    amount,
+		Time:      bidTime,
 		Bidder:    bidder.String(),
 	}
 }

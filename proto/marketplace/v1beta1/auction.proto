@@ -58,5 +58,5 @@ message Bid {
   uint64                    auction_id = 1 [(gogoproto.moretags) = "yaml:\"auction_id\""];
   string                    bidder     = 2;
   cosmos.base.v1beta1.Coin  amount     = 3 [(gogoproto.nullable) = false];
-  google.protobuf.Timestamp time       = 4 [(gogoproto.stdtime) = true];
+  google.protobuf.Timestamp time       = 4 [(gogoproto.stdtime) = true, (gogoproto.nullable) = false];
 }
