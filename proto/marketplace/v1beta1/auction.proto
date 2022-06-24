@@ -27,23 +27,21 @@ message AuctionListing {
     (gogoproto.stdtime)  = true,
     (gogoproto.moretags) = "yaml:\"end_time\""
   ];
-  AuctionStatus             status               = 7;
-  string                    owner                = 8;
-  string                    increment_percentage = 9 [
+  string                    owner                = 7;
+  string                    increment_percentage = 8 [
     (gogoproto.moretags)   = "yaml:\"increment_percentage\"",
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
     (gogoproto.nullable)   = false
   ];
-  repeated string           whitelist_accounts            = 10 [
+  repeated string           whitelist_accounts            = 9 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"whitelist_accounts\""
   ];
-  repeated WeightedAddress  split_shares         = 11 [
+  repeated WeightedAddress  split_shares         = 10 [
     (gogoproto.nullable) = false,
     (gogoproto.moretags) = "yaml:\"split_shares\""
   ];
 }
-
 
 enum AuctionStatus {
 

@@ -10,7 +10,7 @@ import (
 
 // Default period for closing bids for an auction
 const (
-	DefaultBidClosePeriod time.Duration = time.Hour * 12 // 12 hours
+	DefaultBidClosePeriod time.Duration = time.Minute * 12 // 12 Minutes
 )
 
 // Parameter keys
@@ -31,7 +31,7 @@ func NewMarketplaceParams( saleCommission sdk.Dec, distribution Distribution, bi
 	return Params{
 		SaleCommission: saleCommission,
 		Distribution: distribution,
-		BidCloseDuration: &bidCloseDuration,
+		BidCloseDuration: bidCloseDuration,
 	}
 }
 
@@ -146,7 +146,7 @@ func validateMarketplaceDistributionParams(i interface{}) error {
 }
 
 func validateBidCloseDuration(i interface{}) error {
-	v, ok := i.(*time.Duration)
+	v, ok := i.(time.Duration)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

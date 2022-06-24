@@ -127,3 +127,19 @@ func ValidateAuctionListing(auction AuctionListing) error {
 	}
 	return nil
 }
+
+// ValidateBid checks bid is valid or not
+func ValidateBid(bid Bid) error {
+	if len(bid.Bidder) > 0 {
+		if _, err := sdk.AccAddressFromBech32(bid.Bidder); err != nil {
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid bidder address (%s)", bid.Bidder)
+		}
+	}
+	if err := ValidatePrice(bid.Amount); err != nil {
+		return err
+	}
+	if bid.Time.IsZero() {
+		return sdkerrors.Wrapf(ErrInvalidTime, "invalid time (%s)", bid.Time.String())
+	}
+	return nil
+}

@@ -219,22 +219,31 @@ func (k Keeper) UpdateAuctionStatusesAndProcessBids(ctx sdk.Context) error {
 	for ; iterator.Valid(); iterator.Next() {
 		var auction types.AuctionListing
 		k.cdc.MustUnmarshal(iterator.Value(), &auction)
-		if auction.Status == types.AUCTION_STATUS_INACTIVE && auction.StartTime.Before(ctx.BlockTime()) {
-			auction.Status = types.AUCTION_STATUS_ACTIVE
-			k.SetAuctionListing(ctx, auction)
-		} else if auction.Status == types.AUCTION_STATUS_ACTIVE {
+		if auction.StartTime.Before(ctx.BlockTime()) {
 			bid, found := k.GetBid(ctx, auction.GetId())
 			if !found && auction.EndTime != nil && auction.EndTime.Before(ctx.BlockTime()) {
-				auction.Status = types.AUCTION_STATUS_ENDED
-				k.SetAuctionListing(ctx, auction)
-				// TODO: should we delete Auction record ?
+				err := k.nftKeeper.TransferOwnership(ctx, auction.GetDenomId(), auction.GetNftId(),
+					k.accountKeeper.GetModuleAddress(types.ModuleName), auction.GetOwner())
+				if err != nil {
+					return err
+				}
+				k.RemoveAuctionListing(ctx, auction.GetId())
+				k.RemoveBid(ctx, auction.GetId())
+			} else if !found && auction.EndTime == nil &&
+				ctx.BlockTime().Sub(*auction.StartTime).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
+				err := k.nftKeeper.TransferOwnership(ctx, auction.GetDenomId(), auction.GetNftId(),
+					k.accountKeeper.GetModuleAddress(types.ModuleName), auction.GetOwner())
+				if err != nil {
+					return err
+				}
+				k.RemoveAuctionListing(ctx, auction.GetId())
+				k.RemoveBid(ctx, auction.GetId())
+
 			} else if found && ctx.BlockTime().Sub(bid.Time).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
 				err := k.processBid(ctx, auction, bid)
 				if err != nil {
 					return err
 				}
-				auction.Status = types.AUCTION_STATUS_ENDED
-				k.SetAuctionListing(ctx, auction)
 			}
 		}
 	}
@@ -318,7 +327,7 @@ func (k Keeper) processBid(ctx sdk.Context, auction types.AuctionListing, bid ty
 			return err
 		}
 	}
-	auction.Status = types.AUCTION_STATUS_ENDED
-	k.SetAuctionListing(ctx, auction)
+	k.RemoveAuctionListing(ctx, auction.GetId())
+	k.RemoveBid(ctx, auction.GetId())
 	return nil
 }

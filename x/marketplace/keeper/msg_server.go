@@ -169,7 +169,8 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	}
 	var endTime *time.Time
 	if msg.Duration != nil {
-		*endTime = msg.StartTime.Add(*msg.Duration)
+		endAt := msg.StartTime.Add(*msg.Duration)
+		endTime = &endAt
 	}
 	auctionNumber := m.Keeper.GetNextAuctionNumber(ctx)
 	auction := types.NewAuctionListing(auctionNumber, msg.NftId, msg.DenomId,
@@ -205,10 +206,6 @@ func (m msgServer) CancelAuction(goCtx context.Context, msg *types.MsgCancelAuct
 		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "unauthorized address %s", owner.String())
 	}
 
-	if auction.Status == types.AUCTION_STATUS_ENDED {
-		return nil, sdkerrors.Wrapf(types.ErrEndedAuction, "cannot cancel auction %d, ", auction.Id)
-	}
-
 	err = m.Keeper.CancelAuctionListing(ctx, auction)
 	if err != nil {
 		return nil, err
@@ -233,8 +230,8 @@ func (m msgServer) PlaceBid(goCtx context.Context, msg *types.MsgPlaceBid, ) (*t
 	if !found {
 		return nil, sdkerrors.Wrapf(types.ErrAuctionDoesNotExists, "auction id %d not exists", msg.AuctionId)
 	}
-	if auction.Status != types.AUCTION_STATUS_ACTIVE {
-		return nil, sdkerrors.Wrapf(types.ErrInActiveAuction, "cannot place a bid for inactive/ended auction %d, ", auction.Id)
+	if !auction.StartTime.Before(ctx.BlockTime()) {
+		return nil, sdkerrors.Wrapf(types.ErrInActiveAuction, "cannot place a bid for inactive auction %d, ", auction.Id)
 	}
 	if len(auction.WhitelistAccounts) > 0 && !slices.Contains(auction.WhitelistAccounts, bidder.String()) {
 		return nil, sdkerrors.Wrapf(types.ErrUnauthorized, "cannot place a bid for this auction %d, only whitelisted accounts allowed to bid", auction.Id)

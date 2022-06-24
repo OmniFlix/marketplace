@@ -25,7 +25,6 @@ func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime *tim
 		Owner:               owner.String(),
 		WhitelistAccounts:   whitelistAccounts,
 		SplitShares:         splitShares,
-		Status:              AUCTION_STATUS_INACTIVE,
 	}
 }
 
@@ -62,5 +61,8 @@ func (al AuctionListing) GetSplitShares() interface{} {
 }
 
 func (al AuctionListing) GetStatus() string {
-	return  al.Status.String()
+	if al.StartTime.Before(time.Now()) {
+		return AUCTION_STATUS_ACTIVE.String()
+	}
+	return  AUCTION_STATUS_INACTIVE.String()
 }

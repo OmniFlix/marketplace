@@ -31,4 +31,5 @@ var (
 	ErrBidDoesNotExists         = sdkerrors.Register(ModuleName, 24, "bid does not exists")
 	ErrInvalidStartTime         = sdkerrors.Register(ModuleName, 25, "invalid start time")
 	ErrInvalidPercentage        = sdkerrors.Register(ModuleName, 26, "invalid percentage decimal value")
+	ErrInvalidTime              = sdkerrors.Register(ModuleName, 27, "invalid timestamp value")
 )

@@ -18,7 +18,8 @@ message Params {
   Distribution             distribution                 = 2 [(gogoproto.nullable) = false];
   google.protobuf.Duration bid_close_duration   = 3 [
     (gogoproto.moretags)   = "yaml:\"bid_close_duration\"",
-    (gogoproto.stdduration) = true
+    (gogoproto.stdduration) = true,
+    (gogoproto.nullable) = false
   ];
 }
 

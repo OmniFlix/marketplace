@@ -34,6 +34,11 @@ func (m *GenesisState) ValidateGenesis() error {
 			return err
 		}
 	}
+	for _, bid := range m.Bids {
+		if err := ValidateBid(bid); err != nil {
+			return err
+		}
+	}
 	if m.NextAuctionNumber <= 0 {
 		return sdkerrors.Wrap(ErrNonPositiveNumber, "must be a number and greater than 0.")
 	}
