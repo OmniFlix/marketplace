@@ -228,7 +228,7 @@ func (k Keeper) UpdateAuctionStatusesAndProcessBids(ctx sdk.Context) error {
 					return err
 				}
 				k.RemoveAuctionListing(ctx, auction.GetId())
-				k.RemoveBid(ctx, auction.GetId())
+				k.removeAuctionEvent(ctx, auction)
 			} else if !found && auction.EndTime == nil &&
 				ctx.BlockTime().Sub(*auction.StartTime).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
 				err := k.nftKeeper.TransferOwnership(ctx, auction.GetDenomId(), auction.GetNftId(),
@@ -237,7 +237,7 @@ func (k Keeper) UpdateAuctionStatusesAndProcessBids(ctx sdk.Context) error {
 					return err
 				}
 				k.RemoveAuctionListing(ctx, auction.GetId())
-				k.RemoveBid(ctx, auction.GetId())
+				k.removeAuctionEvent(ctx, auction)
 
 			} else if found && ctx.BlockTime().Sub(bid.Time).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
 				err := k.processBid(ctx, auction, bid)
@@ -327,6 +327,7 @@ func (k Keeper) processBid(ctx sdk.Context, auction types.AuctionListing, bid ty
 			return err
 		}
 	}
+	k.processBidEvent(ctx, auction, bid)
 	k.RemoveAuctionListing(ctx, auction.GetId())
 	k.RemoveBid(ctx, auction.GetId())
 	return nil

@@ -12,6 +12,8 @@ const (
 	EventTypeCreateAuction                = "create_auction"
 	EventTypeCancelAuction                = "cancel_auction"
 	EventTypePlaceBid                     = "place_bid"
+	EventTypeRemoveAuction                = "remove_auction"
+	EventTypeProcessBid                   = "process_bid"
 
 	AttributeValueCategory = ModuleName
 	AttributeKeyListingId  = "listing-id"

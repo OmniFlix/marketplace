@@ -132,3 +132,30 @@ func (k *Keeper) placeBidEvent(ctx sdk.Context, auction types.AuctionListing, bi
 		),
 	})
 }
+
+func (k *Keeper) removeAuctionEvent(ctx sdk.Context, auction types.AuctionListing) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeRemoveAuction,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(types.AttributeKeyAuctionId, fmt.Sprint(auction.GetId())),
+			sdk.NewAttribute(types.AttributeKeyDenomId, auction.GetDenomId()),
+			sdk.NewAttribute(types.AttributeKeyNftId, auction.GetNftId()),
+		),
+	})
+}
+
+
+func (k *Keeper) processBidEvent(ctx sdk.Context, auction types.AuctionListing, bid types.Bid) {
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.EventTypeProcessBid,
+			sdk.NewAttribute(sdk.AttributeKeyModule, types.AttributeValueCategory),
+			sdk.NewAttribute(types.AttributeKeyAuctionId, fmt.Sprint(auction.GetId())),
+			sdk.NewAttribute(types.AttributeKeyDenomId, auction.GetDenomId()),
+			sdk.NewAttribute(types.AttributeKeyNftId, auction.GetNftId()),
+			sdk.NewAttribute(types.AttributeKeyBidder, bid.GetBidder().String()),
+			sdk.NewAttribute(types.AttributeKeyAmount, bid.GetAmount().String()),
+		),
+	})
+}
