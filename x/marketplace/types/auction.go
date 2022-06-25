@@ -66,3 +66,11 @@ func (al AuctionListing) GetStatus() string {
 	}
 	return  AUCTION_STATUS_INACTIVE.String()
 }
+
+func ValidAuctionStatus(status AuctionStatus) bool {
+	if status == AUCTION_STATUS_INACTIVE ||
+		status == AUCTION_STATUS_ACTIVE {
+		return true
+	}
+	return false
+}

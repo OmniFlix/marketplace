@@ -407,7 +407,7 @@ func GetCmdQueryAllBids() *cobra.Command {
 		},
 	}
 	flags.AddQueryFlagsToCmd(cmd)
-	cmd.Flags().String(FlagOwner, "", "filter by bidder address")
+	cmd.Flags().String(FlagBidder, "", "filter by bidder address")
 	flags.AddPaginationFlagsToCmd(cmd, "all bids")
 
 	return cmd

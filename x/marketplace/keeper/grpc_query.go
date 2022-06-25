@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	"github.com/cosmos/cosmos-sdk/store/prefix"
@@ -195,54 +196,53 @@ func (k Keeper) Auctions(goCtx context.Context, req *types.QueryAuctionsRequest)
 	}
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
-	var auctions []types.AuctionListing
+	var filteredAuctions []types.AuctionListing
 	var pageRes *query.PageResponse
 	store := ctx.KVStore(k.storeKey)
-
-	var owner sdk.AccAddress
-	var err error
-	if len(req.Owner) > 0 {
-		owner, err = sdk.AccAddressFromBech32(req.Owner)
-		if err != nil {
-			return nil, status.Errorf(codes.InvalidArgument, fmt.Sprintf("invalid owner address (%s)", err))
+	auctionStore := prefix.NewStore(store, types.PrefixAuctionId)
+	pageRes, err := query.FilteredPaginate(auctionStore, req.Pagination, func(key []byte, value []byte, accumulate bool) (bool, error) {
+		var al types.AuctionListing
+		k.cdc.MustUnmarshal(value, &al)
+		matchOwner, matchPriceDenom, matchStatus := true, true, true
+		// match status (if supplied/valid)
+		if types.ValidAuctionStatus(req.Status) {
+			if req.Status == types.AUCTION_STATUS_ACTIVE {
+				matchStatus = al.StartTime.Before(time.Now())
+			} else {
+				matchStatus = al.StartTime.After(time.Now())
+			}
 		}
-		auctionStore := prefix.NewStore(store, append(types.PrefixAuctionOwner, owner.Bytes()...))
-		pageRes, err = query.Paginate(auctionStore, req.Pagination, func(key []byte, value []byte) error {
-			var auctionId gogotypes.UInt64Value
-			k.cdc.MustUnmarshal(value, &auctionId)
-			auction, found := k.GetAuctionListing(ctx, auctionId.Value)
-			if found {
-				auctions = append(auctions, auction)
-			}
-			return nil
-		})
 
-	} else if len(req.PriceDenom) > 0 {
-		auctionStore := prefix.NewStore(store, append(types.PrefixAuctionOwner, []byte(req.PriceDenom)...))
-		pageRes, err = query.Paginate(auctionStore, req.Pagination, func(key []byte, value []byte) error {
-			var auctionId gogotypes.UInt64Value
-			k.cdc.MustUnmarshal(value, &auctionId)
-			auction, found := k.GetAuctionListing(ctx, auctionId.Value)
-			if found {
-				auctions = append(auctions, auction)
+		// match owner address (if supplied)
+		if len(req.Owner) > 0 {
+			owner, err := sdk.AccAddressFromBech32(req.Owner)
+			if err != nil {
+				return false, err
 			}
-			return nil
-		})
-	} else {
 
-		auctionStore := prefix.NewStore(store, types.PrefixAuctionId)
-		pageRes, err = query.Paginate(auctionStore, req.Pagination, func(key []byte, value []byte) error {
-			var auction types.AuctionListing
-			k.cdc.MustUnmarshal(value, &auction)
-			auctions = append(auctions, auction)
-			return nil
-		})
-	}
+			matchOwner = al.Owner == owner.String()
+		}
+
+		// match Price Denom (if supplied)
+		if len(req.PriceDenom) > 0 {
+			matchPriceDenom = al.StartPrice.Denom == req.PriceDenom
+		}
+
+		if matchOwner && matchPriceDenom && matchStatus {
+			if accumulate {
+				filteredAuctions = append(filteredAuctions, al)
+			}
+
+			return true, nil
+		}
+
+		return false, nil
+	})
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "paginate: %v", err)
 	}
 
-	return &types.QueryAuctionsResponse{Auctions: auctions, Pagination: pageRes}, nil
+	return &types.QueryAuctionsResponse{Auctions: filteredAuctions, Pagination: pageRes}, nil
 }
 
 func (k Keeper) Auction(goCtx context.Context, req *types.QueryAuctionRequest) (*types.QueryAuctionResponse, error) {
@@ -367,13 +367,24 @@ func (k Keeper) Bids(goCtx context.Context, req *types.QueryBidsRequest) (*types
 	var pageRes *query.PageResponse
 	store := ctx.KVStore(k.storeKey)
 
-	// TODO: filter bids by bidder address
+	if len(req.Bidder) > 0 {
+		_, err := sdk.AccAddressFromBech32(req.Bidder)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	bidStore := prefix.NewStore(store, types.PrefixBidByAuctionId)
 	pageRes, err := query.Paginate(bidStore, req.Pagination, func(key []byte, value []byte) error {
 		var bid types.Bid
 		k.cdc.MustUnmarshal(value, &bid)
-		bids = append(bids, bid)
+		if len(req.Bidder) > 0 {
+			if bid.Bidder == req.Bidder {
+				bids = append(bids, bid)
+			}
+		} else {
+			bids = append(bids, bid)
+		}
 		return nil
 	})
 	if err != nil {

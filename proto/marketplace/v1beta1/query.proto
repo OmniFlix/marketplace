@@ -120,9 +120,10 @@ message QueryListingsByPriceDenomResponse {
 }
 
 message QueryAuctionsRequest {
-  string                                owner       = 1;
-  string                                price_denom = 2 [(gogoproto.moretags) = "yaml:\"price_denom\""];
-  cosmos.base.query.v1beta1.PageRequest pagination  = 3;
+  AuctionStatus                                status      = 1;
+  string                                owner       = 2;
+  string                                price_denom = 3 [(gogoproto.moretags) = "yaml:\"price_denom\""];
+  cosmos.base.query.v1beta1.PageRequest pagination  = 4;
 }
 
 message QueryAuctionsResponse {
