@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/OmniFlix/onft/docs"
 	store "github.com/cosmos/cosmos-sdk/store/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
 	"io"
 	"net/http"
 	"os"
