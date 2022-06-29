@@ -74,3 +74,72 @@ func ValidateSplitShares(splitShares []WeightedAddress) error {
 	}
 	return nil
 }
+
+func ValidateWhiteListAccounts(whitelistAccounts []string) error {
+	if len(whitelistAccounts) > MaxWhitelistAccounts {
+		return sdkerrors.Wrapf(ErrInvalidWhitelistAccounts,
+			"number of whitelist accounts are more than the limit, len must be less than or equal to %d ", MaxWhitelistAccounts)
+	}
+	for _, address := range whitelistAccounts {
+		_, err := sdk.AccAddressFromBech32(address)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateIncrementPercentage(increment sdk.Dec) error {
+	if !increment.IsPositive() || !increment.LTE(sdk.NewDec(1)) {
+		return sdkerrors.Wrapf(ErrInvalidPercentage, "invalid percentage value (%s)", increment.String())
+	}
+	return nil
+}
+
+func validateAuctionId(id uint64) error {
+	if id <= 0 {
+		return sdkerrors.Wrapf(ErrInvalidAuctionId, "invalid auction id (%d)", id)
+	}
+	return nil
+}
+
+// ValidateAuctionListing checks auction listing is valid or not
+func ValidateAuctionListing(auction AuctionListing) error {
+	if len(auction.Owner) > 0 {
+		if _, err := sdk.AccAddressFromBech32(auction.Owner); err != nil {
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid owner address (%s)", err)
+		}
+	}
+	if err := validateAuctionId(auction.Id); err != nil {
+		return err
+	}
+	if err := ValidatePrice(auction.StartPrice); err != nil {
+		return err
+	}
+	if err := validateIncrementPercentage(auction.IncrementPercentage); err != nil {
+		return err
+	}
+	if err := ValidateSplitShares(auction.SplitShares); err != nil {
+		return err
+	}
+	if err := ValidateWhiteListAccounts(auction.WhitelistAccounts); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ValidateBid checks bid is valid or not
+func ValidateBid(bid Bid) error {
+	if len(bid.Bidder) > 0 {
+		if _, err := sdk.AccAddressFromBech32(bid.Bidder); err != nil {
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid bidder address (%s)", bid.Bidder)
+		}
+	}
+	if err := ValidatePrice(bid.Amount); err != nil {
+		return err
+	}
+	if bid.Time.IsZero() {
+		return sdkerrors.Wrapf(ErrInvalidTime, "invalid time (%s)", bid.Time.String())
+	}
+	return nil
+}
