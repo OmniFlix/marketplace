@@ -15,7 +15,7 @@ func (k Keeper) GetNextAuctionNumber(ctx sdk.Context) uint64 {
 
 	bz := store.Get(types.PrefixNextAuctionNumber)
 	if bz == nil {
-		panic(fmt.Errorf("auction module not initialized -- Should have been done in InitGenesis"))
+		panic(fmt.Errorf("%s module not initialized -- Should have been done in InitGenesis", types.ModuleName))
 	} else {
 		val := gogotypes.UInt64Value{}
 

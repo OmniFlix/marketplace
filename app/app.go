@@ -461,8 +461,8 @@ func New(
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
 	app.mm.RegisterRoutes(app.Router(), app.QueryRouter(), encodingConfig.Amino)
-	app.mm.RegisterServices(module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter()))
-
+	app.configurator = module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter())
+	app.mm.RegisterServices(app.configurator)
 	// initialize stores
 	app.MountKVStores(keys)
 	app.MountTransientStores(tkeys)
@@ -491,6 +491,9 @@ func New(
 	app.UpgradeKeeper.SetUpgradeHandler(
 		"v2",
 		func(ctx sdk.Context, _ upgradetypes.Plan, fromVM module.VersionMap) (module.VersionMap, error) {
+			app.MarketplaceKeeper.SetParams(ctx, marketplacemoduletypes.DefaultParams())
+			app.MarketplaceKeeper.SetNextAuctionNumber(ctx, 1)
+
 			return app.mm.RunMigrations(ctx, app.configurator, fromVM)
 		},
 	)
