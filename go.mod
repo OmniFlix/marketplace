@@ -18,7 +18,7 @@ require (
 	github.com/tendermint/tendermint v0.34.19
 	github.com/tendermint/tm-db v0.6.6
 	golang.org/x/exp v0.0.0-20220609121020-a51bd0440498
-	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb
+	google.golang.org/genproto v0.0.0-20220314164441-57ef72a4c106
 	google.golang.org/grpc v1.45.0
 	google.golang.org/protobuf v1.27.1
 )
@@ -39,6 +39,7 @@ require (
 	github.com/confio/ics23/go v0.6.6 // indirect
 	github.com/cosmos/btcutil v1.0.4 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
+	github.com/cosmos/gogoproto v1.4.0 // indirect
 	github.com/cosmos/iavl v0.17.3 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.11.1 // indirect
 	github.com/cosmos/ledger-go v0.9.2 // indirect
@@ -114,9 +115,9 @@ require (
 	github.com/zondax/hid v0.9.0 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/net v0.0.0-20211208012354-db4efeb81f4b // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
-	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
+	golang.org/x/sys v0.0.0-20220315194320-039c03cc5b86 // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
