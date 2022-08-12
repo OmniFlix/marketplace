@@ -12,7 +12,7 @@ var (
 	_ exported.AuctionListingI = &AuctionListing{}
 )
 
-func NewAuctionListing(id uint64, nftId, denomId string, startTime, endTime *time.Time, startPrice sdk.Coin, incrementPercentage sdk.Dec,
+func NewAuctionListing(id uint64, nftId, denomId string, startTime time.Time, endTime *time.Time, startPrice sdk.Coin, incrementPercentage sdk.Dec,
 	owner sdk.AccAddress, whitelistAccounts []string, splitShares []WeightedAddress) AuctionListing {
 	return AuctionListing{
 		Id:                  id,
@@ -40,7 +40,7 @@ func (al AuctionListing) GetNftId() string {
 	return al.NftId
 }
 func (al AuctionListing) GetStartTime() time.Time {
-	return *al.StartTime
+	return al.StartTime
 }
 
 func (al AuctionListing) GetStartPrice() sdk.Coin {
