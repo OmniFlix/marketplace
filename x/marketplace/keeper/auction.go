@@ -230,7 +230,7 @@ func (k Keeper) UpdateAuctionStatusesAndProcessBids(ctx sdk.Context) error {
 				k.RemoveAuctionListing(ctx, auction.GetId())
 				k.removeAuctionEvent(ctx, auction)
 			} else if !found && auction.EndTime == nil &&
-				ctx.BlockTime().Sub(*auction.StartTime).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
+				ctx.BlockTime().Sub(auction.StartTime).Seconds() > k.GetBidCloseDuration(ctx).Seconds() {
 				err := k.nftKeeper.TransferOwnership(ctx, auction.GetDenomId(), auction.GetNftId(),
 					k.accountKeeper.GetModuleAddress(types.ModuleName), auction.GetOwner())
 				if err != nil {

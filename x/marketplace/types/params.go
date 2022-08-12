@@ -10,13 +10,13 @@ import (
 
 // Default period for closing bids for an auction
 const (
-	DefaultBidClosePeriod time.Duration = time.Minute * 12 // 12 Minutes
+	DefaultBidClosePeriod time.Duration = time.Hour * 12 // 12 Hours
 )
 
 // Parameter keys
 var (
-	ParamStoreKeySaleCommission = []byte("SaleCommission")
-	ParamStoreKeyDistribution   = []byte("MarketplaceDistribution")
+	ParamStoreKeySaleCommission   = []byte("SaleCommission")
+	ParamStoreKeyDistribution     = []byte("MarketplaceDistribution")
 	ParamStoreKeyBidCloseDuration = []byte("BidCloseDuration")
 )
 
@@ -27,10 +27,10 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewMarketplaceParams( saleCommission sdk.Dec, distribution Distribution, bidCloseDuration time.Duration) Params {
+func NewMarketplaceParams(saleCommission sdk.Dec, distribution Distribution, bidCloseDuration time.Duration) Params {
 	return Params{
-		SaleCommission: saleCommission,
-		Distribution: distribution,
+		SaleCommission:   saleCommission,
+		Distribution:     distribution,
 		BidCloseDuration: bidCloseDuration,
 	}
 }
