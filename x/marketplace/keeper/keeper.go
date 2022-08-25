@@ -259,7 +259,7 @@ func (k Keeper) CreateAuctionListing(ctx sdk.Context, auction types.AuctionListi
 func (k Keeper) CancelAuctionListing(ctx sdk.Context, auction types.AuctionListing) error {
     // Check bid Exists or Not
 	if k.HasBid(ctx, auction.Id) {
-		return sdkerrors.Wrapf(types.ErrBidExists, "cannot cancel auction %s, bid exists ", auction.Id)
+		return sdkerrors.Wrapf(types.ErrBidExists, "cannot cancel auction %d, bid exists ", auction.Id)
 	}
 
 	// Transfer Back NFT ownership to auction owner
