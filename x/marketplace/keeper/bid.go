@@ -68,6 +68,6 @@ func (k Keeper) GetBidsByBidder(ctx sdk.Context, bidder sdk.AccAddress) (bids []
 }
 
 func (k Keeper) HasBid(ctx sdk.Context, id uint64) bool {
-	store := ctx.KVStore(k.storeKey)
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.PrefixBidByAuctionId)
 	return store.Has(types.KeyBidPrefix(id))
 }
