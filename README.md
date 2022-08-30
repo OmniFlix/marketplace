@@ -17,6 +17,12 @@ Available Commands:
   listing           
   listings          
   listings-by-owner 
+  auction
+  auctions
+  auctions-by-owner
+  bid
+  bids
+  params
 ```
  - Get Listings 
    
@@ -50,6 +56,30 @@ Available Commands:
   args:
 
   **owner**: bech32 account address
+  
+ - Get Auctions 
+   
+    usage:
+   ```shell
+    marketplaced q marketplace auctions [Flags]
+   ```
+   Flags:
+   
+    **owner**: get auctions of a specfic account address
+   
+    **pagination flags**: count-toal, limit, offset etc ..
+
+ - Get Auction
+   
+    usage:
+   ```shell
+    marketplaced q marketplace auction <auction-id> [Flags]
+   ```
+- Get Auction Bid
+     usage:
+   ```shell
+    marketplaced q marketplace bid <auction-id> [Flags]
+   ```
 
 ### Transactions
 
@@ -67,6 +97,8 @@ buy-nft      - Buy an nft from marketplace
 de-list-nft  - DeList an nft from marketplace
 edit-listing - Edit active listing on marketplace
 ```
+#### Listings
+
 - List NFT
 
     usage:
@@ -113,3 +145,38 @@ edit-listing - Edit active listing on marketplace
     ```shell
     marketplaced tx marketplace de-list-nft [listing-id] --from=<key-name> --chain-id=<chain-id> --fees=<fee>
     ```
+    
+#### Auctions
+
+- Create Auction
+
+  usage:
+    ```shell
+    marketplaced tx marketplace create-auction [flags]
+    ```
+  Example:
+    ```shell
+    marketplaced tx marketplace create-auction --nft-id=<nft_id>  --denom-id=<denom_id>  --start-price=1000000uflix --start-time="2022-11-27T17:26:00.000Z" --from=<key-name> --chain-id=<chain-id> --fees=<fee>
+    ```
+
+- Cancel Auction (only allowed when there are no bids)
+
+  usage:
+    ```shell
+    marketplaced tx marketplace cancel-auction [auction-id] [flags]
+    ```
+  Example:
+  ```shell
+  marketplaced tx marketplace cancel-auction <auction_id> --chain-id=<chain_id> --from=<key-name> --fees=<fee>
+  ```
+- Place Bid 
+
+  usage:
+    ```shell
+    marketplaced tx marketplace place-bid [auction-id] [flags]
+    ```
+  Example:
+  ```shell
+    marketplaced tx marketplace place-bid <auction-id> --amount=<bid_amount> --chain-id=<chain_id> --from=<key-name> --fees=<fee>
+  ```
+  
