@@ -156,7 +156,14 @@ edit-listing - Edit active listing on marketplace
     ```
   Example:
     ```shell
-    marketplaced tx marketplace create-auction --nft-id=<nft_id>  --denom-id=<denom_id>  --start-price=1000000uflix --start-time="2022-11-27T17:26:00.000Z" --from=<key-name> --chain-id=<chain-id> --fees=<fee>
+    marketplaced tx marketplace create-auction 
+      --nft-id=<nft_id>  
+      --denom-id=<denom_id>  
+      --start-price=1000000uflix 
+      --start-time="2022-11-27T17:26:00.000Z" 
+      --from=<key-name> 
+      --chain-id=<chain-id>
+      --fees=<fee>
     ```
 
 - Cancel Auction (only allowed when there are no bids)
@@ -167,7 +174,10 @@ edit-listing - Edit active listing on marketplace
     ```
   Example:
   ```shell
-  marketplaced tx marketplace cancel-auction <auction_id> --chain-id=<chain_id> --from=<key-name> --fees=<fee>
+  marketplaced tx marketplace cancel-auction <auction_id> 
+    --chain-id=<chain_id> 
+    --from=<key-name> 
+    --fees=<fee>
   ```
 - Place Bid 
 
@@ -177,6 +187,10 @@ edit-listing - Edit active listing on marketplace
     ```
   Example:
   ```shell
-    marketplaced tx marketplace place-bid <auction-id> --amount=<bid_amount> --chain-id=<chain_id> --from=<key-name> --fees=<fee>
+    marketplaced tx marketplace place-bid <auction-id> 
+      --amount=<bid_amount> 
+      --chain-id=<chain_id> 
+      --from=<key-name> 
+      --fees=<fee>
   ```
   
