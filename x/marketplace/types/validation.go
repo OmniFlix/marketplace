@@ -33,7 +33,7 @@ func ValidateListing(listing Listing) error {
 
 // ValidatePrice
 func ValidatePrice(price sdk.Coin) error {
-	if price.IsZero() {
+	if price.IsZero() || price.IsNegative() {
 		return sdkerrors.Wrapf(ErrInvalidPrice, "invalid price %d, only accepts positive amount", price)
 	}
 	/*
