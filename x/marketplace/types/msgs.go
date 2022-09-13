@@ -229,6 +229,9 @@ func (msg MsgCreateAuction) ValidateBasic() error {
 	if err = ValidatePrice(msg.StartPrice); err != nil {
 		return err
 	}
+	if err = ValidateDuration(*msg.Duration); err != nil {
+		return err
+	}
 	if !msg.IncrementPercentage.IsPositive() || !msg.IncrementPercentage.LTE(sdk.NewDec(1)) {
 		return sdkerrors.Wrapf(ErrInvalidPercentage, "invalid percentage value (%s)", msg.IncrementPercentage.String())
 	}
