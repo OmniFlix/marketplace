@@ -44,7 +44,7 @@ func ValidatePrice(price sdk.Coin) error {
 }
 
 func ValidateDuration(t interface{}) error {
-	duration, ok := t.(time.Duration)
+	duration, ok := t.(*time.Duration)
 	if !ok {
 		return sdkerrors.Wrapf(ErrInvalidDuration, "invalid value for duration: %T", t)
 	}
