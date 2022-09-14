@@ -32,4 +32,5 @@ var (
 	ErrInvalidStartTime         = sdkerrors.Register(ModuleName, 25, "invalid start time")
 	ErrInvalidPercentage        = sdkerrors.Register(ModuleName, 26, "invalid percentage decimal value")
 	ErrInvalidTime              = sdkerrors.Register(ModuleName, 27, "invalid timestamp value")
+	ErrInvalidDuration          = sdkerrors.Register(ModuleName, 28, "invalid duration")
 )

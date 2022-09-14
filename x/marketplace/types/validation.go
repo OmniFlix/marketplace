@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"strings"
@@ -33,8 +32,8 @@ func ValidateListing(listing Listing) error {
 
 // ValidatePrice
 func ValidatePrice(price sdk.Coin) error {
-	if price.IsZero() {
-		return sdkerrors.Wrapf(ErrInvalidPrice, "invalid price %d, only accepts positive amount", price)
+	if price.IsZero() || price.IsNegative() {
+		return sdkerrors.Wrapf(ErrInvalidPrice, "invalid price %s, only accepts positive amount", price.String())
 	}
 	/*
 		if !StringInSlice(price.Denom, allowedDenoms) {
@@ -44,10 +43,13 @@ func ValidatePrice(price sdk.Coin) error {
 	return nil
 }
 
-func ValidateTimeStamp(t interface{}) error {
-	_, ok := t.(time.Duration)
+func ValidateDuration(t interface{}) error {
+	duration, ok := t.(*time.Duration)
 	if !ok {
-		return fmt.Errorf("invalid value for start time: %T", t)
+		return sdkerrors.Wrapf(ErrInvalidDuration, "invalid value for duration: %T", t)
+	}
+	if duration.Nanoseconds() <= 0 {
+		return sdkerrors.Wrapf(ErrInvalidDuration, "invalid duration %s, only accepts positive value", duration.String())
 	}
 	return nil
 }

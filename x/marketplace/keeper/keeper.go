@@ -257,7 +257,7 @@ func (k Keeper) CreateAuctionListing(ctx sdk.Context, auction types.AuctionListi
 }
 
 func (k Keeper) CancelAuctionListing(ctx sdk.Context, auction types.AuctionListing) error {
-    // Check bid Exists or Not
+	// Check bid Exists or Not
 	if k.HasBid(ctx, auction.Id) {
 		return sdkerrors.Wrapf(types.ErrBidExists, "cannot cancel auction %d, bid exists ", auction.Id)
 	}
@@ -266,7 +266,7 @@ func (k Keeper) CancelAuctionListing(ctx sdk.Context, auction types.AuctionListi
 	err := k.nftKeeper.TransferOwnership(ctx, auction.GetDenomId(), auction.GetNftId(),
 		k.accountKeeper.GetModuleAddress(types.ModuleName), auction.GetOwner())
 	if err != nil {
-		return  err
+		return err
 	}
 	k.RemoveAuctionListing(ctx, auction.GetId())
 	k.UnsetAuctionListingWithOwner(ctx, auction.GetOwner(), auction.GetId())
@@ -282,8 +282,6 @@ func (k Keeper) PlaceBid(ctx sdk.Context, auction types.AuctionListing, newBid t
 	prevBid, bidExists := k.GetBid(ctx, auction.Id)
 	if bidExists {
 		newBidPrice = k.GetNewBidPrice(auction.StartPrice.Denom, prevBid.Amount, auction.IncrementPercentage)
-	} else {
-		newBidPrice = k.GetNewBidPrice(auction.StartPrice.Denom, newBidPrice, auction.IncrementPercentage)
 	}
 	if newBid.Amount.IsLT(newBidPrice) {
 		return sdkerrors.Wrapf(types.ErrBidAmountNotEnough,

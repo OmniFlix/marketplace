@@ -10,13 +10,13 @@ import (
 const (
 	MsgRoute = "marketplace"
 
-	TypeMsgListNFT     = "list_nft"
-	TypeMsgEditListing = "edit_listing"
-	TypeMsgDeListNFT   = "de_list_nft"
-	TypeMsgBuyNFT      = "buy_nft"
+	TypeMsgListNFT       = "list_nft"
+	TypeMsgEditListing   = "edit_listing"
+	TypeMsgDeListNFT     = "de_list_nft"
+	TypeMsgBuyNFT        = "buy_nft"
 	TypeMsgCreateAuction = "create_auction"
 	TypeMsgCancelAuction = "cancel_auction"
-	TypeMsgPlaceBid = "place_bid"
+	TypeMsgPlaceBid      = "place_bid"
 
 	// DoNotModify used to indicate that some field should not be updated
 	DoNotModify = "[do-not-modify]"
@@ -205,15 +205,15 @@ func (msg MsgBuyNFT) GetSigners() []sdk.AccAddress {
 func NewMsgCreateAuction(denomId, nftId string, startTime time.Time, duration *time.Duration, startPrice sdk.Coin, owner sdk.AccAddress,
 	incrementPercentage sdk.Dec, whitelistAccounts []string, splitShares []WeightedAddress) *MsgCreateAuction {
 	return &MsgCreateAuction{
-		NftId:       nftId,
-		DenomId:     denomId,
-		Duration:    duration,
-		StartTime:   startTime,
-		StartPrice:  startPrice,
-		Owner:       owner.String(),
+		NftId:               nftId,
+		DenomId:             denomId,
+		Duration:            duration,
+		StartTime:           startTime,
+		StartPrice:          startPrice,
+		Owner:               owner.String(),
 		IncrementPercentage: incrementPercentage,
-		WhitelistAccounts: whitelistAccounts,
-		SplitShares: splitShares,
+		WhitelistAccounts:   whitelistAccounts,
+		SplitShares:         splitShares,
 	}
 }
 
@@ -229,6 +229,11 @@ func (msg MsgCreateAuction) ValidateBasic() error {
 	if err = ValidatePrice(msg.StartPrice); err != nil {
 		return err
 	}
+	if msg.Duration != nil {
+		if err = ValidateDuration(msg.Duration); err != nil {
+			return err
+		}
+	}
 	if !msg.IncrementPercentage.IsPositive() || !msg.IncrementPercentage.LTE(sdk.NewDec(1)) {
 		return sdkerrors.Wrapf(ErrInvalidPercentage, "invalid percentage value (%s)", msg.IncrementPercentage.String())
 	}
@@ -240,7 +245,7 @@ func (msg MsgCreateAuction) ValidateBasic() error {
 	}
 	return nil
 }
-func (msg MsgCreateAuction ) Validate(now time.Time) error {
+func (msg MsgCreateAuction) Validate(now time.Time) error {
 	if err := msg.ValidateBasic(); err != nil {
 		return err
 	}
@@ -271,7 +276,7 @@ func (msg MsgCreateAuction) GetSigners() []sdk.AccAddress {
 func NewMsgCancelAuction(auctionId uint64, owner sdk.AccAddress) *MsgCancelAuction {
 	return &MsgCancelAuction{
 		AuctionId: auctionId,
-		Owner:       owner.String(),
+		Owner:     owner.String(),
 	}
 }
 
@@ -308,8 +313,8 @@ func (msg MsgCancelAuction) GetSigners() []sdk.AccAddress {
 func NewMsgPlaceBid(auctionId uint64, amount sdk.Coin, bidder sdk.AccAddress) *MsgPlaceBid {
 	return &MsgPlaceBid{
 		AuctionId: auctionId,
-		Amount: amount,
-		Bidder:       bidder.String(),
+		Amount:    amount,
+		Bidder:    bidder.String(),
 	}
 }
 

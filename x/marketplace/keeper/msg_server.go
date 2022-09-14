@@ -2,10 +2,10 @@ package keeper
 
 import (
 	"context"
-	"golang.org/x/exp/slices"
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"golang.org/x/exp/slices"
 	"time"
 )
 
@@ -143,7 +143,7 @@ func (m msgServer) BuyNFT(goCtx context.Context, msg *types.MsgBuyNFT) (*types.M
 }
 
 // CreateAuction
-func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuction, ) (*types.MsgCreateAuctionResponse, error) {
+func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuction) (*types.MsgCreateAuctionResponse, error) {
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -171,6 +171,9 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	if msg.Duration != nil {
 		endAt := msg.StartTime.Add(*msg.Duration)
 		endTime = &endAt
+		if endTime.Before(msg.StartTime) || endTime.Equal(msg.StartTime) {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidDuration, "duration must be positive or nil")
+		}
 	}
 	auctionNumber := m.Keeper.GetNextAuctionNumber(ctx)
 	auction := types.NewAuctionListing(auctionNumber, msg.NftId, msg.DenomId,
@@ -189,7 +192,7 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 }
 
 // CancelAuction
-func (m msgServer) CancelAuction(goCtx context.Context, msg *types.MsgCancelAuction, ) (*types.MsgCancelAuctionResponse, error) {
+func (m msgServer) CancelAuction(goCtx context.Context, msg *types.MsgCancelAuction) (*types.MsgCancelAuctionResponse, error) {
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -217,7 +220,7 @@ func (m msgServer) CancelAuction(goCtx context.Context, msg *types.MsgCancelAuct
 }
 
 // PlaceBid
-func (m msgServer) PlaceBid(goCtx context.Context, msg *types.MsgPlaceBid, ) (*types.MsgPlaceBidResponse, error) {
+func (m msgServer) PlaceBid(goCtx context.Context, msg *types.MsgPlaceBid) (*types.MsgPlaceBidResponse, error) {
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
