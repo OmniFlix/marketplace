@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/OmniFlix/marketplace/x/marketplace/client/cli"
-	"github.com/OmniFlix/marketplace/x/marketplace/client/rest"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/spf13/cobra"
 
@@ -70,7 +69,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 
 // RegisterRESTRoutes registers the marketplace module's REST service handlers.
 func (AppModuleBasic) RegisterRESTRoutes(clientCtx client.Context, rtr *mux.Router) {
-	rest.RegisterHandlers(clientCtx, rtr)
+
 }
 
 // RegisterGRPCGatewayRoutes registers the gRPC Gateway routes for the module.
