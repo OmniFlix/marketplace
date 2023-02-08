@@ -450,6 +450,8 @@ func New(
 	app.ONFTKeeper = onftkeeper.NewKeeper(
 		appCodec,
 		keys[onfttypes.StoreKey],
+		app.AccountKeeper,
+		app.BankKeeper,
 	)
 
 	onftModule := onft.NewAppModule(
