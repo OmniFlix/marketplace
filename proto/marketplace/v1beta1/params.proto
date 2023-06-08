@@ -21,6 +21,11 @@ message Params {
     (gogoproto.stdduration) = true,
     (gogoproto.nullable) = false
   ];
+  google.protobuf.Duration max_auction_duration    = 4 [
+    (gogoproto.moretags)   = "yaml:\"max_auction_duration\"",
+    (gogoproto.stdduration) = true,
+    (gogoproto.nullable) = false
+  ];
 }
 
 message Distribution {

@@ -8,16 +8,18 @@ import (
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
-// Default period for closing bids for an auction
 const (
-	DefaultBidClosePeriod time.Duration = time.Hour * 12 // 12 Hours
+	// DefaultBidClosePeriod Default period for closing bids for an auction
+	DefaultBidClosePeriod     time.Duration = time.Hour * 12      // 12 Hours
+	DefaultMaxAuctionDuration time.Duration = time.Hour * 24 * 90 // 90 Days
 )
 
 // Parameter keys
 var (
-	ParamStoreKeySaleCommission   = []byte("SaleCommission")
-	ParamStoreKeyDistribution     = []byte("MarketplaceDistribution")
-	ParamStoreKeyBidCloseDuration = []byte("BidCloseDuration")
+	ParamStoreKeySaleCommission     = []byte("SaleCommission")
+	ParamStoreKeyDistribution       = []byte("MarketplaceDistribution")
+	ParamStoreKeyBidCloseDuration   = []byte("BidCloseDuration")
+	ParamStoreKeyMaxAuctionDuration = []byte("MaxAuctionDuration")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -27,11 +29,18 @@ func ParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&Params{})
 }
 
-func NewMarketplaceParams(saleCommission sdk.Dec, distribution Distribution, bidCloseDuration time.Duration) Params {
+func NewMarketplaceParams(
+	saleCommission sdk.Dec,
+	distribution Distribution,
+	bidCloseDuration time.Duration,
+	maxAuctionDuration time.Duration,
+) Params {
+
 	return Params{
-		SaleCommission:   saleCommission,
-		Distribution:     distribution,
-		BidCloseDuration: bidCloseDuration,
+		SaleCommission:     saleCommission,
+		Distribution:       distribution,
+		BidCloseDuration:   bidCloseDuration,
+		MaxAuctionDuration: maxAuctionDuration,
 	}
 }
 
@@ -44,6 +53,7 @@ func DefaultParams() Params {
 			CommunityPool: sdk.NewDecWithPrec(50, 2), // 50%
 		},
 		DefaultBidClosePeriod,
+		DefaultMaxAuctionDuration,
 	)
 }
 
@@ -53,6 +63,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(ParamStoreKeySaleCommission, &p.SaleCommission, validateSaleCommission),
 		paramtypes.NewParamSetPair(ParamStoreKeyDistribution, &p.Distribution, validateMarketplaceDistributionParams),
 		paramtypes.NewParamSetPair(ParamStoreKeyBidCloseDuration, &p.BidCloseDuration, validateBidCloseDuration),
+		paramtypes.NewParamSetPair(ParamStoreKeyMaxAuctionDuration, &p.MaxAuctionDuration, validateMaxAuctionDuration),
 	}
 }
 
@@ -65,6 +76,9 @@ func (p Params) ValidateBasic() error {
 		return err
 	}
 	if err := validateBidCloseDuration(p.BidCloseDuration); err != nil {
+		return err
+	}
+	if err := validateMaxAuctionDuration(p.MaxAuctionDuration); err != nil {
 		return err
 	}
 	return nil
@@ -155,5 +169,16 @@ func validateBidCloseDuration(i interface{}) error {
 		return fmt.Errorf("bid close duration must be positive: %f", v.Seconds())
 	}
 
+	return nil
+}
+
+func validateMaxAuctionDuration(d interface{}) error {
+	v, ok := d.(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", d)
+	}
+	if v.Seconds() <= 0 {
+		return fmt.Errorf("max auction duration must be positive: %f", v.Seconds())
+	}
 	return nil
 }
