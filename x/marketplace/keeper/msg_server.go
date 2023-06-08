@@ -142,7 +142,7 @@ func (m msgServer) BuyNFT(goCtx context.Context, msg *types.MsgBuyNFT) (*types.M
 	return &types.MsgBuyNFTResponse{}, nil
 }
 
-// CreateAuction
+// CreateAuction creates a new auction
 func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuction) (*types.MsgCreateAuctionResponse, error) {
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
@@ -153,6 +153,11 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	}
 	if err := msg.Validate(ctx.BlockTime()); err != nil {
 		return nil, err
+	}
+	maxAuctionDuration := m.Keeper.GetMaxAuctionDuration(ctx)
+	if msg.Duration.Seconds() > maxAuctionDuration.Seconds() {
+		return nil, sdkerrors.Wrapf(types.ErrInvalidDuration,
+			"duration %s exceeds max auction duration %s", msg.Duration.String(), maxAuctionDuration.String())
 	}
 
 	nft, err := m.nftKeeper.GetONFT(ctx, msg.DenomId, msg.NftId)

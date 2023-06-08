@@ -5,7 +5,6 @@ import (
 
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 )
 
 // GetParams gets the parameters for the marketplace module.
@@ -34,5 +33,11 @@ func (k Keeper) GetMarketplaceDistributionParams(ctx sdk.Context) (distParams ty
 // GetBidCloseDuration returns the closing duration for bid for auctions.
 func (k Keeper) GetBidCloseDuration(ctx sdk.Context) (duration time.Duration) {
 	k.paramSpace.Get(ctx, types.ParamStoreKeyBidCloseDuration, &duration)
+	return duration
+}
+
+// GetMaxAuctionDuration returns the maximum duration for auctions.
+func (k Keeper) GetMaxAuctionDuration(ctx sdk.Context) (duration time.Duration) {
+	k.paramSpace.Get(ctx, types.ParamStoreKeyMaxAuctionDuration, &duration)
 	return duration
 }
