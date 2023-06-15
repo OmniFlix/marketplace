@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/OmniFlix/marketplace/x/marketplace/client/cli"
 	"github.com/OmniFlix/marketplace/x/marketplace/client/rest"
 	"github.com/cosmos/cosmos-sdk/types/module"

@@ -35,7 +35,6 @@ func NewMarketplaceParams(
 	bidCloseDuration time.Duration,
 	maxAuctionDuration time.Duration,
 ) Params {
-
 	return Params{
 		SaleCommission:     saleCommission,
 		Distribution:       distribution,
@@ -102,6 +101,7 @@ func validateSaleCommission(i interface{}) error {
 
 	return nil
 }
+
 func validateStakingDistribution(i interface{}) error {
 	v, ok := i.(sdk.Dec)
 	if !ok {

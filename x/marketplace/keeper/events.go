@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -144,7 +145,6 @@ func (k *Keeper) removeAuctionEvent(ctx sdk.Context, auction types.AuctionListin
 		),
 	})
 }
-
 
 func (k *Keeper) processBidEvent(ctx sdk.Context, auction types.AuctionListing, bid types.Bid) {
 	ctx.EventManager().EmitEvents(sdk.Events{
