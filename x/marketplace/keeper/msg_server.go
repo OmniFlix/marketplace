@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
+	"time"
+
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"golang.org/x/exp/slices"
-	"time"
 )
 
 type msgServer struct {
@@ -20,6 +21,7 @@ var _ types.MsgServer = msgServer{}
 func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 	return &msgServer{Keeper: keeper}
 }
+
 func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types.MsgListNFTResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
@@ -53,7 +55,8 @@ func (m msgServer) ListNFT(goCtx context.Context, msg *types.MsgListNFT) (*types
 }
 
 func (m msgServer) EditListing(goCtx context.Context,
-	msg *types.MsgEditListing) (*types.MsgEditListingResponse, error) {
+	msg *types.MsgEditListing,
+) (*types.MsgEditListingResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := sdk.AccAddressFromBech32(msg.Owner)
@@ -80,7 +83,8 @@ func (m msgServer) EditListing(goCtx context.Context,
 }
 
 func (m msgServer) DeListNFT(goCtx context.Context,
-	msg *types.MsgDeListNFT) (*types.MsgDeListNFTResponse, error) {
+	msg *types.MsgDeListNFT,
+) (*types.MsgDeListNFTResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := sdk.AccAddressFromBech32(msg.Owner)
@@ -144,7 +148,6 @@ func (m msgServer) BuyNFT(goCtx context.Context, msg *types.MsgBuyNFT) (*types.M
 
 // CreateAuction creates a new auction
 func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuction) (*types.MsgCreateAuctionResponse, error) {
-
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := sdk.AccAddressFromBech32(msg.Owner)
@@ -153,11 +156,6 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	}
 	if err := msg.Validate(ctx.BlockTime()); err != nil {
 		return nil, err
-	}
-	maxAuctionDuration := m.Keeper.GetMaxAuctionDuration(ctx)
-	if msg.Duration.Seconds() > maxAuctionDuration.Seconds() {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidDuration,
-			"duration %s exceeds max auction duration %s", msg.Duration.String(), maxAuctionDuration.String())
 	}
 
 	nft, err := m.nftKeeper.GetONFT(ctx, msg.DenomId, msg.NftId)
@@ -174,6 +172,11 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	}
 	var endTime *time.Time
 	if msg.Duration != nil {
+		maxAuctionDuration := m.Keeper.GetMaxAuctionDuration(ctx)
+		if msg.Duration.Seconds() > maxAuctionDuration.Seconds() {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidDuration,
+				"duration %s exceeds max auction duration %s", msg.Duration.String(), maxAuctionDuration.String())
+		}
 		endAt := msg.StartTime.Add(*msg.Duration)
 		endTime = &endAt
 		if endTime.Before(msg.StartTime) || endTime.Equal(msg.StartTime) {
@@ -198,7 +201,6 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 
 // CancelAuction
 func (m msgServer) CancelAuction(goCtx context.Context, msg *types.MsgCancelAuction) (*types.MsgCancelAuctionResponse, error) {
-
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	owner, err := sdk.AccAddressFromBech32(msg.Owner)
@@ -226,7 +228,6 @@ func (m msgServer) CancelAuction(goCtx context.Context, msg *types.MsgCancelAuct
 
 // PlaceBid
 func (m msgServer) PlaceBid(goCtx context.Context, msg *types.MsgPlaceBid) (*types.MsgPlaceBidResponse, error) {
-
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	bidder, err := sdk.AccAddressFromBech32(msg.Bidder)

@@ -2,6 +2,7 @@ package marketplace
 
 import (
 	"fmt"
+
 	"github.com/OmniFlix/marketplace/x/marketplace/keeper"
 	"github.com/OmniFlix/marketplace/x/marketplace/types"
 
@@ -30,7 +31,7 @@ func NewHandler(k keeper.Keeper) sdk.Handler {
 			res, err := msgServer.BuyNFT(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)
 
-        // Auction messages
+			// Auction messages
 		case *types.MsgCreateAuction:
 			res, err := msgServer.CreateAuction(sdk.WrapSDKContext(ctx), msg)
 			return sdk.WrapServiceResult(ctx, res, err)

@@ -17,7 +17,6 @@ import (
 )
 
 func registerQueryRoutes(cliCtx client.Context, r *mux.Router) {
-
 	r.HandleFunc(fmt.Sprintf("/%s/parameters", types.ModuleName),
 		queryParams(cliCtx),
 	).Methods("GET")
