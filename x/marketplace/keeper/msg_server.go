@@ -154,11 +154,6 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	if err := msg.Validate(ctx.BlockTime()); err != nil {
 		return nil, err
 	}
-	maxAuctionDuration := m.Keeper.GetMaxAuctionDuration(ctx)
-	if msg.Duration.Seconds() > maxAuctionDuration.Seconds() {
-		return nil, sdkerrors.Wrapf(types.ErrInvalidDuration,
-			"duration %s exceeds max auction duration %s", msg.Duration.String(), maxAuctionDuration.String())
-	}
 
 	nft, err := m.nftKeeper.GetONFT(ctx, msg.DenomId, msg.NftId)
 	if err != nil {
@@ -174,6 +169,11 @@ func (m msgServer) CreateAuction(goCtx context.Context, msg *types.MsgCreateAuct
 	}
 	var endTime *time.Time
 	if msg.Duration != nil {
+		maxAuctionDuration := m.Keeper.GetMaxAuctionDuration(ctx)
+		if msg.Duration.Seconds() > maxAuctionDuration.Seconds() {
+			return nil, sdkerrors.Wrapf(types.ErrInvalidDuration,
+				"duration %s exceeds max auction duration %s", msg.Duration.String(), maxAuctionDuration.String())
+		}
 		endAt := msg.StartTime.Add(*msg.Duration)
 		endTime = &endAt
 		if endTime.Before(msg.StartTime) || endTime.Equal(msg.StartTime) {
