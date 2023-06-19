@@ -41,9 +41,9 @@ message WeightedAddress {
 - Timed auction require buyers to bid with a minimum amount.
 - Only one bid is allowed at a time in these auctions.
 - When a new bid is placed, the previous bid amount will be returned to the bidder.
-- If there are no bids, the auction will close at the end of the auction period.
-- If the end time is not defined, the auction will close after the bid close duration.
-- If there are bids, the auction will close after the bid close duration from the last bid time.
+- Auction will end at the end time and the highest bidder will be the winner.
+- if no bids were placed on the auction, it will be closed at end time.`
+
 
 ```go
 message AuctionListing {
